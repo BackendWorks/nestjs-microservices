@@ -1,0 +1,18 @@
+[submodule "user"]
+	path = user
+	url = https://github.com/BackendWorks/user.git
+[submodule "post"]
+	path = post
+	url = https://github.com/BackendWorks/post.git
+[submodule "mailer"]
+	path = mailer
+	url = https://github.com/BackendWorks/mailer.git
+[submodule "notification"]
+	path = notification
+	url = https://github.com/BackendWorks/notification.git
+[submodule "token"]
+	path = token
+	url = https://github.com/BackendWorks/token.git
+[submodule "files"]
+	path = files
+	url = https://github.com/BackendWorks/files.git

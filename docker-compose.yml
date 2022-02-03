@@ -1,0 +1,92 @@
+version: "3"
+
+services:
+  kong:
+    image: kong:latest
+    hostname: kong
+    restart: always
+    networks:
+      - backend
+    command: "kong start"
+    volumes:
+      - ./kong.yml:/usr/local/kong/declarative/kong.yml
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: 0.0.0.0:8080
+      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
+      KONG_ADMIN_LISTEN: 0.0.0.0:9000
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"
+      - "9000:9000"
+  database:
+    image: postgres:latest
+    container_name: nest-postgres
+    ports:
+      - 5431:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=master123
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - backend
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: nest-rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+  cache:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+    networks:
+      - backend
+  mongodb:
+    image: mongo:latest
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+volumes:
+  database:
+    driver: local
+  cache:
+    driver: local
+  mongodb:
+    driver: local

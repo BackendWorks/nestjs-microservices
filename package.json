@@ -1,0 +1,41 @@
+{
+  "name": "nestjs-microservices",
+  "version": "1.0.0",
+  "description": "Nestjs microservices boilerplate",
+  "main": "run.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"**/src/**/*.ts\"",
+    "format:yml": "prettier --write \"*.yml\"",
+    "start": "node run.js",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmake98/nestjs-microservices.git"
+  },
+  "keywords": [
+    "microservices",
+    "nestjs"
+  ],
+  "author": "hmake98",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hmake98/nestjs-microservices/issues"
+  },
+  "homepage": "https://github.com/hmake98/nestjs-microservices#readme",
+  "devDependencies": {
+    "@nestjs/cli": "^8.2.0",
+    "@types/prettier": "^2.2.3",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1",
+    "husky": "^7.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^14.3.2",
+    "prompt-sync": "^4.2.0"
+  }
+}

@@ -1,0 +1,28 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: post
+    url: http://host.docker.internal:8002
+    routes:
+      - name: post
+        paths:
+          - /post
+  - name: user
+    url: http://host.docker.internal:8001
+    routes:
+      - name: user
+        paths:
+          - /user
+  - name: files
+    url: http://host.docker.internal:8003
+    routes:
+      - name: files
+        paths:
+          - /files
+  - name: notification
+    url: http://host.docker.internal:8003
+    routes:
+      - name: notification
+        paths:
+          - /notification
