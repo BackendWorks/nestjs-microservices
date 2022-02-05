@@ -1,26 +1,20 @@
 #!/bin/sh
 echo "---------- Nest Microservices ----------"
-echo "Available commands: ["install", "gen", "build", "run"]"
+echo "Available commands: ["install", "generate", "build", "run"]"
 echo "Enter command : "
 read command
 
 case $command in
     run)
-        cat .env
-        up="COMPOSE_FILE=docker-compose.yml"
         for entry in */
         do
             if [ -e $entry/nest-cli.json ]
             then
-                unameOut="$(uname -s)"
-                if [[ "$unameOut" == "linux"* ]] || [[ "$unameOut" == "darwin"* ]]; then
-                    up+=":./$entry/docker-compose.yml"
-                    elif [[ "$unameOut" == "win"* ]] || [[ "$unameOut" == "MINGW64_NT"* ]]; then
-                    up+=";./$entry/docker-compose.yml"
-                fi
+                cd $entry
+                pm2 start npm --name "$entry" -- start
+                cd .. 
             fi
         done
-        echo $up >> .env
     ;;
     install)
         for entry in */
@@ -34,7 +28,7 @@ case $command in
             fi
         done
     ;;
-    gen)
+    generate)
         echo "Enter service name : "; read name
         echo "Generating service files..."
         nest new $name

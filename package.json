@@ -4,11 +4,11 @@
   "description": "Nestjs microservices boilerplate",
   "main": "run.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write \"**/src/**/*.ts\"",
     "format:yml": "prettier --write \"*.yml\"",
-    "start": "node run.js",
-    "prepare": "husky install"
+    "start": "sh run.sh",
+    "prepare": "husky install",
+    "pm2": "pm2"
   },
   "repository": {
     "type": "git",
@@ -31,11 +31,11 @@
     "cross-env": "^7.0.3",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "prettier": "^2.2.1",
-    "husky": "^7.0.0"
+    "husky": "^7.0.0",
+    "pm2": "^5.1.2",
+    "prettier": "^2.2.1"
   },
   "dependencies": {
-    "dotenv": "^14.3.2",
-    "prompt-sync": "^4.2.0"
+    "dotenv": "^14.3.2"
   }
 }
