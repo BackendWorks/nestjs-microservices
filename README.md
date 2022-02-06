@@ -54,15 +54,11 @@ sh run.sh
 - `docker-compose up -d` command will create application in watch mode.  
   
 #### Pending work: 
-- add building script and run script using bash.
-- add file services, loggers, and common service which will be used as a module.
 - add ACL as root service.
 - improve eslint functions.
 - add admin module.
 - oauth authentication.
 - deployment scripts.
-- add git submodules.
-- versioning with release notes.
 - use ELK for logger.
 
 
