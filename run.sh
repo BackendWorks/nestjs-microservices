@@ -1,21 +1,10 @@
 #!/bin/sh
 echo "---------- Nest Microservices ----------"
-echo "Available commands: ["install", "generate", "build", "run"]"
+echo "Available commands: ["install", "generate", "build"]"
 echo "Enter command : "
 read command
 
 case $command in
-    run)
-        for entry in */
-        do
-            if [ -e $entry/nest-cli.json ]
-            then
-                cd $entry
-                pm2 start npm --name "$entry" -- start
-                cd .. 
-            fi
-        done
-    ;;
     install)
         for entry in */
         do

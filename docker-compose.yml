@@ -1,8 +1,129 @@
 version: "3"
 
 services:
+  user:
+    container_name: ${USER_HOST}
+    build:
+      context: ./user
+    restart: "no"
+    hostname: ${USER_HOST}
+    ports:
+      - ${USER_PORT}:${USER_PORT}
+    env_file:
+      - ./.env
+      - ./user/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./user/:/var/www/user
+      - /var/www/user/node_modules
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database
+      - rabbitmq
+  post:
+    container_name: ${POST_HOST}
+    build:
+      context: ./post
+    restart: "no"
+    hostname: ${POST_HOST}
+    ports:
+      - ${POST_PORT}:${POST_PORT}
+    env_file:
+      - ./.env
+      - ./post/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./post/:/var/www/post
+      - /var/www/post/node_modules
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database
+      - rabbitmq
+  notification:
+    container_name: ${NOTIFICATION_HOST}
+    build:
+      context: ./notification
+    restart: "no"
+    hostname: ${NOTIFICATION_HOST}
+    ports:
+      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
+    env_file:
+      - ./.env
+      - ./notification/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./notification/:/var/www/notification
+      - /var/www/notification/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    links:
+      - mongodb
+      - rabbitmq
+  files:
+    container_name: ${FILES_HOST}
+    build:
+      context: ./files
+    restart: "no"
+    hostname: ${FILES_HOST}
+    ports:
+      - ${FILES_PORT}:${FILES_PORT}
+    env_file:
+      - ./.env
+      - ./files/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./files/:/var/www/files
+      - /var/www/files/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    links:
+      - mongodb
+      - rabbitmq
+  mailer:
+    container_name: ${MAILER_HOST}
+    build:
+      context: ./mailer
+    restart: "no"
+    hostname: ${MAILER_HOST}
+    env_file:
+      - ./.env
+      - ./mailer/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./mailer/:/var/www/mailer
+      - /var/www/mailer/node_modules
+    links:
+      - rabbitmq
+  token:
+    container_name: ${TOKEN_HOST}
+    build:
+      context: ./token
+    restart: "no"
+    hostname: ${TOKEN_HOST}
+    env_file:
+      - ./.env
+      - ./token/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./token/:/var/www/token
+      - /var/www/token/node_modules
+    links:
+      - rabbitmq
   kong:
     image: kong:latest
+    container_name: nest-kong
     hostname: kong
     restart: always
     networks:
@@ -56,6 +177,7 @@ services:
       - .env
   cache:
     image: redis:latest
+    container_name: nest-redis
     restart: always
     ports:
       - "6379:6379"
@@ -65,6 +187,7 @@ services:
       - backend
   mongodb:
     image: mongo:latest
+    container_name: nest-mongodb
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
       interval: 10s
