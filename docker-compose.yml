@@ -5,7 +5,6 @@ services:
     container_name: ${USER_HOST}
     build:
       context: ./user
-    restart: "no"
     hostname: ${USER_HOST}
     ports:
       - ${USER_PORT}:${USER_PORT}
@@ -15,7 +14,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./user/:/var/www/user
+      - ./user:/var/www/user
       - /var/www/user/node_modules
     depends_on:
       database:
@@ -27,7 +26,6 @@ services:
     container_name: ${POST_HOST}
     build:
       context: ./post
-    restart: "no"
     hostname: ${POST_HOST}
     ports:
       - ${POST_PORT}:${POST_PORT}
@@ -37,7 +35,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./post/:/var/www/post
+      - ./post:/var/www/post
       - /var/www/post/node_modules
     depends_on:
       database:
@@ -49,7 +47,6 @@ services:
     container_name: ${NOTIFICATION_HOST}
     build:
       context: ./notification
-    restart: "no"
     hostname: ${NOTIFICATION_HOST}
     ports:
       - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
@@ -59,7 +56,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./notification/:/var/www/notification
+      - ./notification:/var/www/notification
       - /var/www/notification/node_modules
     depends_on:
       mongodb:
@@ -71,7 +68,6 @@ services:
     container_name: ${FILES_HOST}
     build:
       context: ./files
-    restart: "no"
     hostname: ${FILES_HOST}
     ports:
       - ${FILES_PORT}:${FILES_PORT}
@@ -81,7 +77,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./files/:/var/www/files
+      - ./files:/var/www/files
       - /var/www/files/node_modules
     depends_on:
       mongodb:
@@ -93,7 +89,6 @@ services:
     container_name: ${MAILER_HOST}
     build:
       context: ./mailer
-    restart: "no"
     hostname: ${MAILER_HOST}
     env_file:
       - ./.env
@@ -101,7 +96,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./mailer/:/var/www/mailer
+      - ./mailer:/var/www/mailer
       - /var/www/mailer/node_modules
     links:
       - rabbitmq
@@ -109,7 +104,6 @@ services:
     container_name: ${TOKEN_HOST}
     build:
       context: ./token
-    restart: "no"
     hostname: ${TOKEN_HOST}
     env_file:
       - ./.env
@@ -117,7 +111,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./token/:/var/www/token
+      - ./token:/var/www/token
       - /var/www/token/node_modules
     links:
       - rabbitmq
