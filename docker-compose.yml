@@ -2,7 +2,6 @@ version: "3"
 
 services:
   user:
-    container_name: ${USER_HOST}
     build:
       context: ./user
     hostname: ${USER_HOST}
@@ -23,7 +22,6 @@ services:
       - database
       - rabbitmq
   post:
-    container_name: ${POST_HOST}
     build:
       context: ./post
     hostname: ${POST_HOST}
@@ -44,7 +42,6 @@ services:
       - database
       - rabbitmq
   notification:
-    container_name: ${NOTIFICATION_HOST}
     build:
       context: ./notification
     hostname: ${NOTIFICATION_HOST}
@@ -65,7 +62,6 @@ services:
       - mongodb
       - rabbitmq
   files:
-    container_name: ${FILES_HOST}
     build:
       context: ./files
     hostname: ${FILES_HOST}
@@ -86,7 +82,6 @@ services:
       - mongodb
       - rabbitmq
   mailer:
-    container_name: ${MAILER_HOST}
     build:
       context: ./mailer
     hostname: ${MAILER_HOST}
@@ -101,7 +96,6 @@ services:
     links:
       - rabbitmq
   token:
-    container_name: ${TOKEN_HOST}
     build:
       context: ./token
     hostname: ${TOKEN_HOST}
@@ -117,7 +111,6 @@ services:
       - rabbitmq
   kong:
     image: kong:latest
-    container_name: nest-kong
     hostname: kong
     restart: always
     networks:
@@ -142,7 +135,6 @@ services:
       - "9000:9000"
   database:
     image: postgres:latest
-    container_name: nest-postgres
     ports:
       - 5431:5432
     environment:
@@ -150,7 +142,7 @@ services:
       - POSTGRES_PASSWORD=master123
       - POSTGRES_DB=postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -160,7 +152,6 @@ services:
       - backend
   rabbitmq:
     image: rabbitmq:latest
-    container_name: nest-rabbitmq
     hostname: rabbitmq
     volumes:
       - /var/lib/rabbitmq
@@ -171,7 +162,6 @@ services:
       - .env
   cache:
     image: redis:latest
-    container_name: nest-redis
     restart: always
     ports:
       - "6379:6379"
@@ -181,7 +171,6 @@ services:
       - backend
   mongodb:
     image: mongo:latest
-    container_name: nest-mongodb
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
       interval: 10s
