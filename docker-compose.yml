@@ -17,8 +17,7 @@ services:
       - ./user:/var/www/user
       - /var/www/user/node_modules
     depends_on:
-      database:
-        condition: service_healthy
+      - database
     links:
       - database
       - rabbitmq
@@ -38,8 +37,7 @@ services:
       - ./post:/var/www/post
       - /var/www/post/node_modules
     depends_on:
-      database:
-        condition: service_healthy
+      - database
     links:
       - database
       - rabbitmq
@@ -59,8 +57,7 @@ services:
       - ./notification:/var/www/notification
       - /var/www/notification/node_modules
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     links:
       - mongodb
       - rabbitmq
@@ -80,8 +77,7 @@ services:
       - ./files:/var/www/files
       - /var/www/files/node_modules
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     links:
       - mongodb
       - rabbitmq
@@ -141,6 +137,7 @@ services:
       - "8080:8080"
       - "9000:9000"
   database:
+    hostname: database
     image: postgres:latest
     container_name: nest-postgres
     ports:
@@ -149,11 +146,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=master123
       - POSTGRES_DB=postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     volumes:
       - database:/var/lib/postgresql/data
     networks:
@@ -162,14 +154,18 @@ services:
     image: rabbitmq:latest
     container_name: nest-rabbitmq
     hostname: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=myuser
+      - RABBITMQ_DEFAULT_PASS=mypassword
     volumes:
       - /var/lib/rabbitmq
     ports:
-      - "5672:5672"
+      - "5671:5672"
       - "15672:15672"
     env_file:
       - .env
   cache:
+    hostname: redis
     image: redis:latest
     container_name: nest-redis
     restart: always
@@ -180,19 +176,14 @@ services:
     networks:
       - backend
   mongodb:
+    hostname: mongodb
     image: mongo:latest
     container_name: nest-mongodb
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: master123
     ports:
-      - 27017:27017
+      - 27018:27017
     volumes:
       - mongodb:/data/db
     networks:

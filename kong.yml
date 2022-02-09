@@ -3,25 +3,25 @@ _transform: true
 
 services:
   - name: post
-    url: http://host.docker.internal:8002
+    url: http://post:8002
     routes:
       - name: post
         paths:
           - /post
   - name: user
-    url: http://host.docker.internal:8001
+    url: http://user:8001
     routes:
       - name: user
         paths:
           - /user
   - name: files
-    url: http://host.docker.internal:8003
+    url: http://files:8003
     routes:
       - name: files
         paths:
           - /files
   - name: notification
-    url: http://host.docker.internal:8003
+    url: http://notification:8004
     routes:
       - name: notification
         paths:
