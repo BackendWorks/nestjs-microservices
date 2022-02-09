@@ -54,17 +54,7 @@ sh run.sh
 - After adding new service, first add service name and port in `.env` file in root. as it'll use in docker-compose file for specific service.
 - Using `docker-compose up -d` the development server will start on port `8080`. so, base url for server would be `http://localhost:8080` and then add the service name after. like `http://localhost:8080/user`. you can configure this prefix path in `kong.yml`
 - `docker-compose up -d` command will create application in watch mode.  
-  
-<<<<<<< HEAD
-### Pending work: 
-- Add ACL as root service.
-- Improve `eslint` functions.
-- Add `admin` module.
-- OAuth authentication.
-- Deployment scripts.
-- Versioning with release notes.
-- ELK for logger.
-=======
+
 #### Pending work: 
 - add ACL as root service.
 - improve eslint functions.
@@ -72,7 +62,6 @@ sh run.sh
 - oauth authentication.
 - deployment scripts.
 - use ELK for logger.
->>>>>>> 1d3ef41ac719005a07329ce6bc092980a2782fba
 
 
 
