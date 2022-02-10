@@ -13,7 +13,6 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - It's still under development process. so, some feature might not work.
 
 ## Setting up an environment
-
 - Core dependencies such as RabbitMQ, Postgres database, Redis connection, MongoDB for particular services are required to start all services together.
 - You can use `docker-compose` to setting up all Core services Or you can install it in your own system one by one.
 - Use `example.env` as reference.

@@ -1,190 +1,271 @@
-version: "3"
+version: "3.2"
 
 services:
-  user:
-    build:
-      context: ./user
-    hostname: ${USER_HOST}
-    ports:
-      - ${USER_PORT}:${USER_PORT}
-    env_file:
-      - ./.env
-      - ./user/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./user:/var/www/user
-      - /var/www/user/node_modules
-    depends_on:
-      - database
-    links:
-      - database
-      - rabbitmq
-  post:
-    build:
-      context: ./post
-    hostname: ${POST_HOST}
-    ports:
-      - ${POST_PORT}:${POST_PORT}
-    env_file:
-      - ./.env
-      - ./post/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./post:/var/www/post
-      - /var/www/post/node_modules
-    depends_on:
-      - database
-    links:
-      - database
-      - rabbitmq
-  notification:
-    build:
-      context: ./notification
-    hostname: ${NOTIFICATION_HOST}
-    ports:
-      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
-    env_file:
-      - ./.env
-      - ./notification/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./notification:/var/www/notification
-      - /var/www/notification/node_modules
-    depends_on:
-      - mongodb
-    links:
-      - mongodb
-      - rabbitmq
-  files:
-    build:
-      context: ./files
-    hostname: ${FILES_HOST}
-    ports:
-      - ${FILES_PORT}:${FILES_PORT}
-    env_file:
-      - ./.env
-      - ./files/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./files:/var/www/files
-      - /var/www/files/node_modules
-    depends_on:
-      - mongodb
-    links:
-      - mongodb
-      - rabbitmq
-  mailer:
-    build:
-      context: ./mailer
-    hostname: ${MAILER_HOST}
-    env_file:
-      - ./.env
-      - ./mailer/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./mailer:/var/www/mailer
-      - /var/www/mailer/node_modules
-    links:
-      - rabbitmq
-  token:
-    build:
-      context: ./token
-    hostname: ${TOKEN_HOST}
-    env_file:
-      - ./.env
-      - ./token/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./token:/var/www/token
-      - /var/www/token/node_modules
-    links:
-      - rabbitmq
-  kong:
-    image: kong:latest
-    hostname: kong
-    restart: always
-    networks:
-      - backend
-    command: "kong start"
-    volumes:
-      - ./kong.yml:/usr/local/kong/declarative/kong.yml
-    environment:
-      KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: 0.0.0.0:8080
-      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
-      KONG_ADMIN_LISTEN: 0.0.0.0:9000
-    depends_on:
-      - database
-    ports:
-      - "8080:8080"
-      - "9000:9000"
-  database:
-    hostname: database
-    image: postgres:latest
-    ports:
-      - 5431:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=master123
-      - POSTGRES_DB=postgres
-    volumes:
-      - database:/var/lib/postgresql/data
-    networks:
-      - backend
+  # user:
+  #   build:
+  #     context: ./user
+  #   hostname: ${USER_HOST}
+  #   ports:
+  #     - ${USER_PORT}:${USER_PORT}
+  #   env_file:
+  #     - ./.env
+  #     - ./user/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./user:/var/www/user
+  #     - /var/www/user/node_modules
+  #   depends_on:
+  #     - database
+  #   links:
+  #     - database
+  #     - rabbitmq
+  # post:
+  #   build:
+  #     context: ./post
+  #   hostname: ${POST_HOST}
+  #   ports:
+  #     - ${POST_PORT}:${POST_PORT}
+  #   env_file:
+  #     - ./.env
+  #     - ./post/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./post:/var/www/post
+  #     - /var/www/post/node_modules
+  #   depends_on:
+  #     - database
+  #   links:
+  #     - database
+  #     - rabbitmq
+  # notification:
+  #   build:
+  #     context: ./notification
+  #   hostname: ${NOTIFICATION_HOST}
+  #   ports:
+  #     - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
+  #   env_file:
+  #     - ./.env
+  #     - ./notification/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./notification:/var/www/notification
+  #     - /var/www/notification/node_modules
+  #   depends_on:
+  #     - mongodb
+  #   links:
+  #     - mongodb
+  #     - rabbitmq
+  # files:
+  #   build:
+  #     context: ./files
+  #   hostname: ${FILES_HOST}
+  #   ports:
+  #     - ${FILES_PORT}:${FILES_PORT}
+  #   env_file:
+  #     - ./.env
+  #     - ./files/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./files:/var/www/files
+  #     - /var/www/files/node_modules
+  #   depends_on:
+  #     - mongodb
+  #   links:
+  #     - mongodb
+  #     - rabbitmq
+  # mailer:
+  #   build:
+  #     context: ./mailer
+  #   hostname: ${MAILER_HOST}
+  #   env_file:
+  #     - ./.env
+  #     - ./mailer/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./mailer:/var/www/mailer
+  #     - /var/www/mailer/node_modules
+  #   links:
+  #     - rabbitmq
+  # token:
+  #   build:
+  #     context: ./token
+  #   hostname: ${TOKEN_HOST}
+  #   env_file:
+  #     - ./.env
+  #     - ./token/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./token:/var/www/token
+  #     - /var/www/token/node_modules
+  #   links:
+  #     - rabbitmq
+  # logger:
+  #   build:
+  #     context: ./logger
+  #   hostname: ${LOGGER_HOST}
+  #   env_file:
+  #     - ./.env
+  #     - ./logger/.${NODE_ENV}.env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./token:/var/www/logger
+  #     - /var/www/logger/node_modules
+  #   links:
+  #     - rabbitmq
+  # kong:
+  #   image: kong:latest
+  #   hostname: kong
+  #   restart: always
+  #   networks:
+  #     - backend
+  #   command: "kong start"
+  #   volumes:
+  #     - ./kong.yml:/usr/local/kong/declarative/kong.yml
+  #   environment:
+  #     KONG_DATABASE: "off"
+  #     KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+  #     KONG_PROXY_ACCESS_LOG: /dev/stdout
+  #     KONG_ADMIN_ACCESS_LOG: /dev/stdout
+  #     KONG_PROXY_ERROR_LOG: /dev/stderr
+  #     KONG_ADMIN_ERROR_LOG: /dev/stderr
+  #     KONG_PROXY_LISTEN: 0.0.0.0:8080
+  #     KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
+  #     KONG_ADMIN_LISTEN: 0.0.0.0:9000
+  #   depends_on:
+  #     - database
+  #   ports:
+  #     - "8080:8080"
+  #     - "9000:9000"
+  # database:
+  #   hostname: database
+  #   image: postgres:latest
+  #   ports:
+  #     - 5431:5432
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=master123
+  #     - POSTGRES_DB=postgres
+  #   volumes:
+  #     - database:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
   rabbitmq:
-    image: rabbitmq:latest
+    image: "rabbitmq:3-management"
     hostname: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=myuser
-      - RABBITMQ_DEFAULT_PASS=mypassword
     volumes:
-      - /var/lib/rabbitmq
+      - rabbit_data:/var/lib/rabbitmq
     ports:
       - "5671:5672"
-      - "15672:15672"
+      - "15671:15672"
     env_file:
       - .env
-  cache:
-    hostname: redis
-    image: redis:latest
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      - cache:/data
     networks:
       - backend
-  mongodb:
-    hostname: mongodb
-    image: mongo:latest
-    container_name: nest-mongodb
+  # cache:
+  #   hostname: redis
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - cache:/data
+  #   networks:
+  #     - backend
+  # mongodb:
+  #   hostname: mongodb
+  #   image: mongo:latest
+  #   container_name: nest-mongodb
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: master123
+  #   ports:
+  #     - 27018:27017
+  #   volumes:
+  #     - mongodb:/data/db
+  #   networks:
+  #     - backend
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: master123
-    ports:
-      - 27018:27017
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
     volumes:
-      - mongodb:/data/db
+      - type: bind
+        source: ./logger/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+    networks:
+      - backend
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.11.0
+    volumes:
+      - type: bind
+        source: ./logger/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+        read_only: true
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - backend
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.11.0
+    ports:
+      - "5000:5000/tcp"
+      - "5044:5044/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    volumes:
+      - type: bind
+        source: ./logger/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logger/logstash.conf
+        target: /usr/share/logstash/conf.d/logstash.conf
+        read_only: true
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - backend
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.11.0
+    links:
+      - elasticsearch
+      - logstash
+    depends_on:
+      - elasticsearch
+      - logstash
     networks:
       - backend
 networks:
   backend:
     driver: bridge
 volumes:
-  database:
-    driver: local
-  cache:
-    driver: local
-  mongodb:
+  # database:
+  #   driver: local
+  # cache:
+  #   driver: local
+  # mongodb:
+  #   driver: local
+  rabbit_data:
     driver: local
