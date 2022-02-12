@@ -4,13 +4,21 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 ![Screenshot 2021-09-16 at 6 50 37 PM](https://user-images.githubusercontent.com/23061515/133619746-5598d4b6-e5eb-481e-b916-04bf56dce49c.png)
 
 
+## Dependencies
+- RabbitMQ - https://www.rabbitmq.com/
+- Redis - https://redis.io/
+- Elasticsearch, Logstash, Kibana, Filebeat - https://www.elastic.co/
+- MognoDB - https://www.mongodb.com/
+- PostgreSQL - https://www.postgresql.org/
+- Kong - https://konghq.com/
+
 ## Get started
 - `AUTO RELOAD` is enabled for docker-compose on file changes using docker volumes. so, If you do any kind of changes in local it will automatically reflect to docker containers.
 - Services included with type-safe interfaces and managed worker queues using Redis.
 - Basic flow is implemented as user, post functionality.
-- As a base gateway Kong is being used. you can get more information about Kong from [here](https://docs.konghq.com/).
+- As a base gateway Kong is being used. you can get more information about Kong from.
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
-- It's still under development process. so, some feature might not work.
+- ELK version - `7.5.1`
 
 ## Setting up an environment
 - Core dependencies such as RabbitMQ, Postgres database, Redis connection, MongoDB for particular services are required to start all services together.
@@ -45,6 +53,7 @@ docker-compose up -d
 ```
 sh run.sh
 ```
+- `start`: will copy root `.env` file to services as `.development.env` and then start docker-compose
 - `install`: for installation of node_modules in services.
 - `build`: build dist folder for all services.
 - `generate`: generate new service
@@ -55,12 +64,7 @@ sh run.sh
 - `docker-compose up -d` command will create application in watch mode.  
 
 #### Pending work: 
-- add ACL as root service.
-- improve eslint functions.
-- add admin module.
-- oauth authentication.
-- deployment scripts.
-- use ELK for logger.
+- deployment, production level changes
 
 
 
