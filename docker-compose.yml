@@ -192,74 +192,46 @@ services:
   #   networks:
   #     - backend
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
-    environment:
-      - xpack.security.enabled=false
-      - "discovery.type=single-node"
-    volumes:
-      - type: bind
-        source: ./logger/elasticsearch.yml
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
-        read_only: true
-    networks:
-      - backend
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
     ports:
       - "9200:9200"
-      - "9300:9300"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.11.0
-    volumes:
-      - type: bind
-        source: ./logger/kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
-        read_only: true
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    networks:
-      - backend
-    links:
-      - elasticsearch
-    depends_on:
-      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:5.2.2
     ports:
-      - 5601:5601
+      - "5601:5601"
+    environment:
+      - "xpack.security.enabled=false"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.11.0
+    image: docker.elastic.co/logstash/logstash:5.2.2
     ports:
-      - "5000:5000/tcp"
-      - "5044:5044/tcp"
-      - "5000:5000/udp"
-      - "9600:9600"
+      - "25826:25826"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     volumes:
-      - type: bind
-        source: ./logger/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-        read_only: true
-      - type: bind
-        source: ./logger/logstash.conf
-        target: /usr/share/logstash/conf.d/logstash.conf
-        read_only: true
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-    networks:
-      - backend
-    links:
-      - elasticsearch
+      - $PWD/elk-config:/elk-config
+    command: logstash -f /elk-config/logstash.config
     depends_on:
-      - elasticsearch
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:7.11.0
-    links:
-      - elasticsearch
-      - logstash
-    depends_on:
-      - elasticsearch
-      - logstash
-    networks:
-      - backend
+      elasticsearch:
+        condition: service_healthy
 networks:
   backend:
     driver: bridge
+  # elk:
+  #   driver: bridge
 volumes:
   # database:
   #   driver: local
@@ -269,3 +241,5 @@ volumes:
   #   driver: local
   rabbit_data:
     driver: local
+  # elasticsearch:
+  #   driver: local
