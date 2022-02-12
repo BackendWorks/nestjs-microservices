@@ -13,7 +13,7 @@ case $command in
                 cp -r .env $entry.development.env    
             fi
         done
-        sudo docker-compose up
+        docker-compose up
     ;;
     install)
         for entry in */
