@@ -1,10 +1,20 @@
 #!/bin/sh
 echo "---------- Nest Microservices ----------"
-echo "Available commands: ["install", "generate", "build"]"
+echo "Available commands: ["install", "generate", "build", "start"]"
 echo "Enter command : "
 read command
 
 case $command in
+    start)
+        for entry in */
+        do
+            if [ -e $entry/nest-cli.json ]
+            then
+                cp -r .env $entry.development.env    
+            fi
+        done
+        docker-compose up
+    ;;
     install)
         for entry in */
         do
@@ -21,16 +31,6 @@ case $command in
         echo "Enter service name : "; read name
         echo "Generating service files..."
         nest new $name
-        echo "Would you to add this service in kong routes? [Y/n] "; read ans
-        echo "Enter port for $name service : "; read port
-        if [ "$ans" = 'Y' ]; then
-            echo "  - name: $name
-    url: http://host.docker.internal:$port
-    routes:
-      - name: $name
-        paths:
-            - /$name" >> kong.yml
-        fi
     ;;
     build)
         for entry in */

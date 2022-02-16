@@ -1,7 +1,9 @@
-version: "3"
+version: "3.0"
 
 services:
   user:
+    restart: on-failure
+
     build:
       context: ./user
     hostname: ${USER_HOST}
@@ -16,12 +18,12 @@ services:
       - ./user:/var/www/user
       - /var/www/user/node_modules
     depends_on:
-      database:
-        condition: service_healthy
+      - database
     links:
       - database
       - rabbitmq
   post:
+    restart: on-failure
     build:
       context: ./post
     hostname: ${POST_HOST}
@@ -36,12 +38,12 @@ services:
       - ./post:/var/www/post
       - /var/www/post/node_modules
     depends_on:
-      database:
-        condition: service_healthy
+      - database
     links:
       - database
       - rabbitmq
   notification:
+    restart: on-failure
     build:
       context: ./notification
     hostname: ${NOTIFICATION_HOST}
@@ -56,12 +58,12 @@ services:
       - ./notification:/var/www/notification
       - /var/www/notification/node_modules
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     links:
       - mongodb
       - rabbitmq
   files:
+    restart: on-failure
     build:
       context: ./files
     hostname: ${FILES_HOST}
@@ -76,12 +78,12 @@ services:
       - ./files:/var/www/files
       - /var/www/files/node_modules
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     links:
       - mongodb
       - rabbitmq
   mailer:
+    restart: on-failure
     build:
       context: ./mailer
     hostname: ${MAILER_HOST}
@@ -96,6 +98,7 @@ services:
     links:
       - rabbitmq
   token:
+    restart: on-failure
     build:
       context: ./token
     hostname: ${TOKEN_HOST}
@@ -107,6 +110,23 @@ services:
     volumes:
       - ./token:/var/www/token
       - /var/www/token/node_modules
+    links:
+      - rabbitmq
+  logger:
+    restart: on-failure
+    build:
+      context: ./logger
+    hostname: ${LOGGER_HOST}
+    env_file:
+      - ./.env
+      - ./logger/.${NODE_ENV}.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+    volumes:
+      - ./logger:/var/www/logger
+      - /var/www/logger/node_modules
     links:
       - rabbitmq
   kong:
@@ -134,6 +154,7 @@ services:
       - "8080:8080"
       - "9000:9000"
   database:
+    hostname: database
     image: postgres:latest
     ports:
       - 5431:5432
@@ -141,26 +162,29 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=master123
       - POSTGRES_DB=postgres
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     volumes:
       - database:/var/lib/postgresql/data
     networks:
       - backend
   rabbitmq:
-    image: rabbitmq:latest
+    image: "rabbitmq:3-management"
     hostname: rabbitmq
     volumes:
-      - /var/lib/rabbitmq
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5671:5672"
+      - "15671:15672"
     env_file:
       - .env
+    networks:
+      - backend
   cache:
+    hostname: redis
     image: redis:latest
     restart: always
     ports:
@@ -170,24 +194,73 @@ services:
     networks:
       - backend
   mongodb:
+    hostname: mongodb
     image: mongo:latest
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: master123
     ports:
-      - 27017:27017
+      - 27018:27017
     volumes:
       - mongodb:/data/db
     networks:
       - backend
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    command: elasticsearch
+    volumes:
+      - ./logger/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - es_data:/usr/share/elasticsearch/data
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: changeme
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elk
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.5.1
+    volumes:
+      - ./logger/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logger/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+    depends_on: ['elasticsearch']
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.5.1
+    volumes:
+      - ./logger/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on: ['elasticsearch']
+  filebeat:
+    command: ['--strict.perms=false']
+    build:
+      context: ./logger/filebeat/
+    volumes:
+      - "/var/lib/docker/containers:/usr/share/dockerlogs/data:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    depends_on: ['elasticsearch', 'logstash']
+    networks:
+      - elk
 networks:
   backend:
+    driver: bridge
+  elk:
     driver: bridge
 volumes:
   database:
@@ -195,4 +268,8 @@ volumes:
   cache:
     driver: local
   mongodb:
+    driver: local
+  rabbit_data:
+    driver: local
+  es_data:
     driver: local
