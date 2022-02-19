@@ -30,33 +30,28 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 
 Install dependencies for root.
 ```
-npm i 
+npm install
 ```
-run a single service
+
+Install service deps
 ```
-npm start
+npm run service-install
 ```
-build a single service
+
+Build services
 ```
 npm run build
 ```
-run in production
+
+Start service in development mode
 ```
-npm run prod
-```
-Docker compose run
-```
-docker-compose up -d
+npm start
 ```
 
-### CLI commands: 
+Clean build folders in services
 ```
-sh run.sh
+npm run clean
 ```
-- `start`: will copy root `.env` file to services as `.development.env` and then start docker-compose
-- `install`: for installation of node_modules in services.
-- `build`: build dist folder for all services.
-- `generate`: generate new service
 ## Docker Notes:
 - If you're using docker environment as your development env, then your need to change `localhost` to `host.docker.internal` for connection of internal connection with docker.
 - After adding new service, first add service name and port in `.env` file in root. as it'll use in docker-compose file for specific service.

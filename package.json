@@ -8,8 +8,6 @@
     "build": "sudo sh build.sh",
     "clean": "sudo sh clean.sh",
     "service-install": "sh install.sh",
-    "prepare": "husky install",
-    "pre-commit": "lint-staged",
     "stop": "docker-compose down"
   },
   "repository": {
