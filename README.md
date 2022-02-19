@@ -14,17 +14,16 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 
 ## Get started
 - `AUTO RELOAD` is enabled for docker-compose on file changes using docker volumes. so, If you do any kind of changes in local it will automatically reflect to docker containers.
-- Services included with type-safe interfaces and managed worker queues using Redis.
-- Basic flow is implemented as user, post functionality.
+- Services included with type-safe interfaces and managed worker, queues using Redis.
 - As a base gateway Kong is being used. you can get more information about Kong from.
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
-- ELK version - `7.5.1`
+- Logger services is implemented using ELK stack with Filebeat.
 
 ## Setting up an environment
 - Core dependencies such as RabbitMQ, Postgres database, Redis connection, MongoDB for particular services are required to start all services together.
 - You can use `docker-compose` to setting up all Core services Or you can install it in your own system one by one.
 - Use `example.env` as reference.
-- `kong.yml` file will be used for routing of services. so, define any new service in `kong.yml` first.
+- `kong.yml` file will be used for routing of services. so, define new service in `kong.yml` first.
 
 ## Installation
 
@@ -38,25 +37,31 @@ Install service deps
 npm run service-install
 ```
 
+## Build
+
 Build services
 ```
 npm run build
 ```
+
+## Run
 
 Start service in development mode
 ```
 npm start
 ```
 
+## Clean build folders
+
 Clean build folders in services
 ```
 npm run clean
 ```
 ## Docker Notes:
-- If you're using docker environment as your development env, then your need to change `localhost` to `host.docker.internal` for connection of internal connection with docker.
-- After adding new service, first add service name and port in `.env` file in root. as it'll use in docker-compose file for specific service.
-- Using `docker-compose up -d` the development server will start on port `8080`. so, base url for server would be `http://localhost:8080` and then add the service name after. like `http://localhost:8080/user`. you can configure this prefix path in `kong.yml`
-- `docker-compose up -d` command will create application in watch mode.  
+- If you're running docker-compose in windows platform, the URI host should change `localhost` to `host.docker.internal` for connection of internal connection with docker.
+- If you're running docker-compose in ubuntu or macOS, the URI should be host name like for `postgres` database it's `database`.
+- The development server will start on port `8080`. so, base url for server would be `http://localhost:8080`. you can reconfigure this prefix path in `kong.yml`.
+- for rebuild all services use command `docker-compose up --build`.  
 
 #### Pending work: 
 - deployment, production level changes
