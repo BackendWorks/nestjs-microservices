@@ -118,7 +118,7 @@ services:
     links:
       - rabbitmq
   kong:
-    image: kong:latest
+    image: hmake98/kong:latest
     hostname: kong
     restart: always
     networks:
@@ -147,7 +147,7 @@ services:
       - POSTGRES_PASSWORD=master123
       - POSTGRES_DB=postgres
     volumes:
-      - database:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     networks:
       - backend
   rabbitmq:
@@ -194,7 +194,7 @@ networks:
   backend:
     driver: bridge
 volumes:
-  database:
+  pg_data:
     driver: local
   cache:
     driver: local

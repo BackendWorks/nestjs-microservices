@@ -2,148 +2,57 @@ version: "3.2"
 
 services:
   user:
-    restart: on-failure
-    build:
-      context: ./user
-      dockerfile: Dockerfile.prod
-    hostname: ${USER_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-user
     ports:
       - ${USER_PORT}:${USER_PORT}
     env_file:
       - ./.env
-      - ./user/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./user:/var/www/user
-      - /var/www/user/node_modules
     depends_on:
       - database
-    links:
-      - database
-      - rabbitmq
   post:
-    restart: on-failure
-    build:
-      context: ./post
-      dockerfile: Dockerfile.prod
-    hostname: ${POST_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-post
     ports:
       - ${POST_PORT}:${POST_PORT}
     env_file:
       - ./.env
-      - ./post/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./post:/var/www/post
-      - /var/www/post/node_modules
     depends_on:
       - database
-    links:
-      - database
-      - rabbitmq
   notification:
-    restart: on-failure
-    build:
-      context: ./notification
-      dockerfile: Dockerfile.prod
-    hostname: ${NOTIFICATION_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-notification
     ports:
       - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
     env_file:
-      - ./.env 
-      - ./notification/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./notification:/var/www/notification
-      - /var/www/notification/node_modules
+      - ./.env
     depends_on:
       - mongodb
-    links:
-      - mongodb
-      - rabbitmq
   files:
-    restart: on-failure
-    build:
-      context: ./files
-      dockerfile: Dockerfile.prod
-    hostname: ${FILES_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-files
     ports:
       - ${FILES_PORT}:${FILES_PORT}
     env_file:
       - ./.env
-      - ./files/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./files:/var/www/files
-      - /var/www/files/node_modules
     depends_on:
       - mongodb
-    links:
-      - mongodb
-      - rabbitmq
   mailer:
-    restart: on-failure
-    build:
-      context: ./mailer
-      dockerfile: Dockerfile.prod
-    hostname: ${MAILER_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-mailer
     env_file:
       - ./.env
-      - ./mailer/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./mailer:/var/www/mailer
-      - /var/www/mailer/node_modules
-    links:
-      - rabbitmq
   token:
-    restart: on-failure
-    build:
-      context: ./token
-      dockerfile: Dockerfile.prod
-    hostname: ${TOKEN_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-token
     env_file:
       - ./.env
-      - ./token/.${NODE_ENV}.env
-    networks:
-      - backend
-    volumes:
-      - ./token:/var/www/token
-      - /var/www/token/node_modules
-    links:
-      - rabbitmq
   logger:
-    restart: on-failure
-    build:
-      context: ./logger
-      dockerfile: Dockerfile.prod
-    hostname: ${LOGGER_HOST}
+    image: public.ecr.aws/y5g9y5s8/ms-logger
     env_file:
       - ./.env
-      - ./logger/.${NODE_ENV}.env
     depends_on:
       - rabbitmq
-    networks:
-      - backend
     volumes:
-      - ./logger:/var/www/logger
-      - /var/www/logger/node_modules
-    links:
-      - rabbitmq
+      - type: volume
+        source: nestjs_logger
+        target: /var/www/logger/logs
   kong:
-    image: kong:latest
-    hostname: kong
-    restart: always
-    networks:
-      - backend
-    command: "kong start"
-    volumes:
-      - ./kong.yml:/usr/local/kong/declarative/kong.yml
+    image: hmake98/kong:latest
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
@@ -156,21 +65,17 @@ services:
       - "8080:8080"
       - "9000:9000"
   database:
-    hostname: database
     image: postgres:latest
     ports:
-      - 5431:5432
+      - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=master123
       - POSTGRES_DB=postgres
     volumes:
-      - database:/var/lib/postgresql/data
-    networks:
-      - backend
+      - pg_data:/var/lib/postgresql/data
   rabbitmq:
-    image: "rabbitmq:3-management"
-    hostname: rabbitmq
+    image: rabbitmq:3-management
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     healthcheck:
@@ -179,41 +84,28 @@ services:
       timeout: 30s
       retries: 3
     ports:
-      - "5671:5672"
-      - "15671:15672"
+      - "5672:5672"
+      - "15672:15672"
     env_file:
       - .env
-    networks:
-      - backend
   cache:
-    hostname: redis
     image: redis:latest
-    restart: always
     ports:
       - "6379:6379"
     volumes:
       - cache:/data
-    networks:
-      - backend
   mongodb:
-    hostname: mongodb
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: master123
     ports:
-      - 27018:27017
+      - 27017:27017
     volumes:
       - mongodb:/data/db
-    networks:
-      - backend
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    image: hmake98/elasticsearch:latest
     volumes:
-      - type: bind
-        source: ./logger/elasticsearch.yml
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
-        read_only: true
       - type: volume
         source: es_data
         target: /usr/share/elasticsearch/data
@@ -224,71 +116,64 @@ services:
       ES_JAVA_OPTS: "-Xmx1g -Xms1g"
       ELASTIC_PASSWORD: changeme
       discovery.type: single-node
-    networks:
-      - elk
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.5.1
-    volumes:
-      - type: bind
-        source: ./logger/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-        read_only: true
-      - type: bind
-        source: ./logger/pipeline
-        target: /usr/share/logstash/pipeline
-        read_only: true
+    image: hmake98/logstash:latest
     ports:
       - 5044:5044
     environment:
       LS_JAVA_OPTS: "-Xmx2g -Xms2g"
-    networks:
-      - elk
     depends_on:
       - elasticsearch
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.5.1
-    volumes:
-      - type: bind
-        source: ./logger/kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
-        read_only: true
+    image: hmake98/kibana:latest
     ports:
       - "5601:5601"
-    networks:
-      - elk
     depends_on:
       - elasticsearch
   filebeat:
-    restart: on-failure
-    build:
-      context: ./logger/filebeat/
+    image: hmake98/filebeat:latest
     volumes:
-      - type: bind
-        source: ./logger/filebeat/filebeat.yml
-        target: /usr/share/filebeat/filebeat.yml
-      - type: bind
-        source: ./logger/logs
+      - type: volume
+        source: nestjs_logger
         target: /usr/share/filebeat/logs
     command: " ./filebeat -c filebeat.yml -e -strict.perms=false"
     depends_on:
       - elasticsearch
-    networks:
-      - elk
-
-networks:
-  backend:
-    driver: bridge
-  elk:
-    driver: bridge
 volumes:
-  database:
-    driver: local
+  pg_data:
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
   cache:
-    driver: local
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
   mongodb:
-    driver: local
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
   rabbit_data:
-    driver: local
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
   es_data:
-    driver: local
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
+  nestjs_logger:
+    driver_opts:
+      performance-mode: maxIO
+      throughput-mode: bursting
+      uid: 0
+      gid: 0
