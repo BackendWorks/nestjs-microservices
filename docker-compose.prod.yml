@@ -5,11 +5,11 @@ services:
     restart: on-failure
     build:
       context: ./user
+      dockerfile: Dockerfile.prod
     hostname: ${USER_HOST}
     ports:
       - ${USER_PORT}:${USER_PORT}
     env_file:
-      - ./.env
       - ./user/.${NODE_ENV}.env
     networks:
       - backend
@@ -21,89 +21,88 @@ services:
     links:
       - database
       - rabbitmq
-      - logger
-  # post:
-  #   restart: on-failure
-  #   build:
-  #     context: ./post
-  #   hostname: ${POST_HOST}
-  #   ports:
-  #     - ${POST_PORT}:${POST_PORT}
-  #   env_file:
-  #     - ./.env
-  #     - ./post/.${NODE_ENV}.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./post:/var/www/post
-  #     - /var/www/post/node_modules
-  #   depends_on:
-  #     - database
-  #   links:
-  #     - database
-  #     - rabbitmq
-  # notification:
-  #   restart: on-failure
-  #   build:
-  #     context: ./notification
-  #   hostname: ${NOTIFICATION_HOST}
-  #   ports:
-  #     - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
-  #   env_file:
-  #     - ./.env
-  #     - ./notification/.${NODE_ENV}.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./notification:/var/www/notification
-  #     - /var/www/notification/node_modules
-  #   depends_on:
-  #     - mongodb
-  #   links:
-  #     - mongodb
-  #     - rabbitmq
-  # files:
-  #   restart: on-failure
-  #   build:
-  #     context: ./files
-  #   hostname: ${FILES_HOST}
-  #   ports:
-  #     - ${FILES_PORT}:${FILES_PORT}
-  #   env_file:
-  #     - ./.env
-  #     - ./files/.${NODE_ENV}.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./files:/var/www/files
-  #     - /var/www/files/node_modules
-  #   depends_on:
-  #     - mongodb
-  #   links:
-  #     - mongodb
-  #     - rabbitmq
-  # mailer:
-  #   restart: on-failure
-  #   build:
-  #     context: ./mailer
-  #   hostname: ${MAILER_HOST}
-  #   env_file:
-  #     - ./.env
-  #     - ./mailer/.${NODE_ENV}.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./mailer:/var/www/mailer
-  #     - /var/www/mailer/node_modules
-  #   links:
-  #     - rabbitmq
+  post:
+    restart: on-failure
+    build:
+      context: ./post
+      dockerfile: Dockerfile.prod
+    hostname: ${POST_HOST}
+    ports:
+      - ${POST_PORT}:${POST_PORT}
+    env_file:
+      - ./post/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./post:/var/www/post
+      - /var/www/post/node_modules
+    depends_on:
+      - database
+    links:
+      - database
+      - rabbitmq
+  notification:
+    restart: on-failure
+    build:
+      context: ./notification
+      dockerfile: Dockerfile.prod
+    hostname: ${NOTIFICATION_HOST}
+    ports:
+      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
+    env_file:
+      - ./notification/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./notification:/var/www/notification
+      - /var/www/notification/node_modules
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+      - rabbitmq
+  files:
+    restart: on-failure
+    build:
+      context: ./files
+      dockerfile: Dockerfile.prod
+    hostname: ${FILES_HOST}
+    ports:
+      - ${FILES_PORT}:${FILES_PORT}
+    env_file:
+      - ./files/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./files:/var/www/files
+      - /var/www/files/node_modules
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+      - rabbitmq
+  mailer:
+    restart: on-failure
+    build:
+      context: ./mailer
+      dockerfile: Dockerfile.prod
+    hostname: ${MAILER_HOST}
+    env_file:
+      - ./mailer/.${NODE_ENV}.env
+    networks:
+      - backend
+    volumes:
+      - ./mailer:/var/www/mailer
+      - /var/www/mailer/node_modules
+    links:
+      - rabbitmq
   token:
     restart: on-failure
     build:
       context: ./token
+      dockerfile: Dockerfile.prod
     hostname: ${TOKEN_HOST}
     env_file:
-      - ./.env
       - ./token/.${NODE_ENV}.env
     networks:
       - backend
@@ -112,14 +111,13 @@ services:
       - /var/www/token/node_modules
     links:
       - rabbitmq
-      - logger
   logger:
     restart: on-failure
     build:
       context: ./logger
+      dockerfile: Dockerfile.prod
     hostname: ${LOGGER_HOST}
     env_file:
-      - ./.env
       - ./logger/.${NODE_ENV}.env
     depends_on:
       - rabbitmq
@@ -142,10 +140,6 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_PROXY_LISTEN: 0.0.0.0:8080
       KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
       KONG_ADMIN_LISTEN: 0.0.0.0:9000
@@ -184,28 +178,28 @@ services:
       - .env
     networks:
       - backend
-  # cache:
-  #   hostname: redis
-  #   image: redis:latest
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - cache:/data
-  #   networks:
-  #     - backend
-  # mongodb:
-  #   hostname: mongodb
-  #   image: mongo:latest
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: admin
-  #     MONGO_INITDB_ROOT_PASSWORD: master123
-  #   ports:
-  #     - 27018:27017
-  #   volumes:
-  #     - mongodb:/data/db
-  #   networks:
-  #     - backend
+  cache:
+    hostname: redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+    networks:
+      - backend
+  mongodb:
+    hostname: mongodb
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - 27018:27017
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - backend
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
     volumes:
@@ -269,14 +263,6 @@ services:
       - type: bind
         source: ./logger/logs
         target: /usr/share/filebeat/logs
-      # - type: bind
-      #   source: /var/run/docker.sock
-      #   target: /var/run/docker.sock
-      #   read_only: true
-      # - type: bind
-      #   source: /var/lib/docker/containers/
-      #   target: /var/lib/docker/containers/
-      #   read_only: true
     command: " ./filebeat -c filebeat.yml -e -strict.perms=false"
     depends_on:
       - elasticsearch

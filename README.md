@@ -51,6 +51,23 @@ Start service in development mode
 npm start
 ```
 
+Start service in production mode
+```
+npm prod
+```
+
+## Build docker-compose file
+
+Build docker-compose images for development env
+```
+npm run docker-build-dev
+```
+
+Build docker-compose images for production env
+```
+npm run docker-build-prod
+```
+
 ## Clean build folders
 
 Clean build folders in services
