@@ -10,6 +10,7 @@ services:
     ports:
       - ${USER_PORT}:${USER_PORT}
     env_file:
+      - ./.env
       - ./user/.${NODE_ENV}.env
     networks:
       - backend
@@ -30,6 +31,7 @@ services:
     ports:
       - ${POST_PORT}:${POST_PORT}
     env_file:
+      - ./.env
       - ./post/.${NODE_ENV}.env
     networks:
       - backend
@@ -50,6 +52,7 @@ services:
     ports:
       - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
     env_file:
+      - ./.env 
       - ./notification/.${NODE_ENV}.env
     networks:
       - backend
@@ -70,6 +73,7 @@ services:
     ports:
       - ${FILES_PORT}:${FILES_PORT}
     env_file:
+      - ./.env
       - ./files/.${NODE_ENV}.env
     networks:
       - backend
@@ -88,6 +92,7 @@ services:
       dockerfile: Dockerfile.prod
     hostname: ${MAILER_HOST}
     env_file:
+      - ./.env
       - ./mailer/.${NODE_ENV}.env
     networks:
       - backend
@@ -103,6 +108,7 @@ services:
       dockerfile: Dockerfile.prod
     hostname: ${TOKEN_HOST}
     env_file:
+      - ./.env
       - ./token/.${NODE_ENV}.env
     networks:
       - backend
@@ -118,6 +124,7 @@ services:
       dockerfile: Dockerfile.prod
     hostname: ${LOGGER_HOST}
     env_file:
+      - ./.env
       - ./logger/.${NODE_ENV}.env
     depends_on:
       - rabbitmq

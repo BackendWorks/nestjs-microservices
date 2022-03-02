@@ -103,3 +103,5 @@ dist
 .stage.env
 .production.env
 .env
+
+configure.sh
