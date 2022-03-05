@@ -7,11 +7,11 @@ for entry in */; do
 done
 
 if [ "$NODE_ENV" = "development" ]; then
-    echo "starting docker-compose with file - docker-compose.dev.yml"
+    echo "starting docker-compose with file - docker-compose.yml"
     docker-compose -f docker-compose.dev.yml up
 fi
 
 if [ "$NODE_ENV" = "production" ]; then
-    echo "starting docker-compose with file - docker-compose.yml"
+    echo "starting docker-compose with file - docker-compose.prod.yml"
     docker-compose -f docker-compose.yml up
 fi
