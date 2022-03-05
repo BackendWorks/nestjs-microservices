@@ -10,8 +10,7 @@ services:
     ports:
       - ${USER_PORT}:${USER_PORT}
     env_file:
-      - ./.env
-      - ./user/.${NODE_ENV}.env
+      - ./user/.env
     networks:
       - backend
     volumes:
@@ -19,6 +18,7 @@ services:
       - /var/www/user/node_modules
     depends_on:
       - database
+      - rabbitmq
     links:
       - database
       - rabbitmq
@@ -31,8 +31,7 @@ services:
     ports:
       - ${POST_PORT}:${POST_PORT}
     env_file:
-      - ./.env
-      - ./post/.${NODE_ENV}.env
+      - ./post/.env
     networks:
       - backend
     volumes:
@@ -40,6 +39,7 @@ services:
       - /var/www/post/node_modules
     depends_on:
       - database
+      - rabbitmq
     links:
       - database
       - rabbitmq
@@ -52,8 +52,7 @@ services:
     ports:
       - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
     env_file:
-      - ./.env
-      - ./notification/.${NODE_ENV}.env
+      - ./notification/.env
     networks:
       - backend
     volumes:
@@ -61,6 +60,7 @@ services:
       - /var/www/notification/node_modules
     depends_on:
       - mongodb
+      - rabbitmq
     links:
       - mongodb
       - rabbitmq
@@ -73,8 +73,7 @@ services:
     ports:
       - ${FILES_PORT}:${FILES_PORT}
     env_file:
-      - ./.env
-      - ./files/.${NODE_ENV}.env
+      - ./files/.env
     networks:
       - backend
     volumes:
@@ -82,6 +81,7 @@ services:
       - /var/www/files/node_modules
     depends_on:
       - mongodb
+      - rabbitmq
     links:
       - mongodb
       - rabbitmq
@@ -92,10 +92,11 @@ services:
       dockerfile: Dockerfile
     hostname: ${MAILER_HOST}
     env_file:
-      - ./.env
-      - ./mailer/.${NODE_ENV}.env
+      - ./mailer/.env
     networks:
       - backend
+    depends_on:
+      - rabbitmq
     volumes:
       - ./mailer:/var/www/mailer
       - /var/www/mailer/node_modules
@@ -108,24 +109,27 @@ services:
       dockerfile: Dockerfile
     hostname: ${TOKEN_HOST}
     env_file:
-      - ./.env
-      - ./token/.${NODE_ENV}.env
+      - ./token/.env
     networks:
       - backend
+    depends_on:
+      - rabbitmq
     volumes:
       - ./token:/var/www/token
       - /var/www/token/node_modules
     links:
       - rabbitmq
   kong:
-    image: hmake98/kong:latest
     hostname: kong
+    build:
+      context: ./kong
+      dockerfile: Dockerfile
     restart: always
     networks:
       - backend
     command: "kong start"
     volumes:
-      - ./kong.yml:/usr/local/kong/declarative/kong.yml
+      - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
@@ -151,15 +155,10 @@ services:
     networks:
       - backend
   rabbitmq:
-    image: "rabbitmq:3-management"
     hostname: rabbitmq
+    image: "rabbitmq:3-management"
     volumes:
       - rabbit_data:/var/lib/rabbitmq
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
     ports:
       - "5671:5672"
       - "15671:15672"
@@ -173,8 +172,6 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    volumes:
-      - cache:/data
     networks:
       - backend
   mongodb:
@@ -195,8 +192,6 @@ networks:
     driver: bridge
 volumes:
   pg_data:
-    driver: local
-  cache:
     driver: local
   mongodb:
     driver: local
