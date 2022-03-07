@@ -9,48 +9,10 @@ services:
       - ./.env
     depends_on:
       - database
-  post:
-    image: public.ecr.aws/y5g9y5s8/ms-post
-    ports:
-      - ${POST_PORT}:${POST_PORT}
-    env_file:
-      - ./.env
-    depends_on:
-      - database
-  notification:
-    image: public.ecr.aws/y5g9y5s8/ms-notification
-    ports:
-      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
-    env_file:
-      - ./.env
-    depends_on:
-      - mongodb
-  files:
-    image: public.ecr.aws/y5g9y5s8/ms-files
-    ports:
-      - ${FILES_PORT}:${FILES_PORT}
-    env_file:
-      - ./.env
-    depends_on:
-      - mongodb
-  mailer:
-    image: public.ecr.aws/y5g9y5s8/ms-mailer
-    env_file:
-      - ./.env
   token:
     image: public.ecr.aws/y5g9y5s8/ms-token
     env_file:
       - ./.env
-  logger:
-    image: public.ecr.aws/y5g9y5s8/ms-logger
-    env_file:
-      - ./.env
-    depends_on:
-      - rabbitmq
-    volumes:
-      - type: volume
-        source: nestjs_logger
-        target: /var/www/logger/logs
   kong:
     image: hmake98/kong:latest
     environment:
@@ -62,10 +24,11 @@ services:
     depends_on:
       - database
     ports:
-      - "8080:8080"
-      - "9000:9000"
+      - 8080:8080
+      - 9000:9000
   database:
     image: postgres:latest
+    restart: always
     ports:
       - 5432:5432
     environment:
@@ -78,102 +41,34 @@ services:
     image: rabbitmq:3-management
     volumes:
       - rabbit_data:/var/lib/rabbitmq
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    env_file:
-      - .env
-  cache:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-    volumes:
-      - cache:/data
-  mongodb:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: master123
-    ports:
-      - 27017:27017
-    volumes:
-      - mongodb:/data/db
-  elasticsearch:
-    image: hmake98/elasticsearch:latest
-    volumes:
-      - type: volume
-        source: es_data
-        target: /usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
-      ELASTIC_PASSWORD: changeme
-      discovery.type: single-node
-  logstash:
-    image: hmake98/logstash:latest
-    ports:
-      - 5044:5044
-    environment:
-      LS_JAVA_OPTS: "-Xmx2g -Xms2g"
-    depends_on:
-      - elasticsearch
-
-  kibana:
-    image: hmake98/kibana:latest
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-  filebeat:
-    image: hmake98/filebeat:latest
-    volumes:
-      - type: volume
-        source: nestjs_logger
-        target: /usr/share/filebeat/logs
-    command: " ./filebeat -c filebeat.yml -e -strict.perms=false"
-    depends_on:
-      - elasticsearch
+      - 5672:5672
+      - 15672:15672
 volumes:
   pg_data:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
-  cache:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
-  mongodb:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
+    external: true
+    name: fs-04f9dba7972ff1b66
   rabbit_data:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
-  es_data:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
-  nestjs_logger:
-    driver_opts:
-      performance-mode: maxIO
-      throughput-mode: bursting
-      uid: 0
-      gid: 0
+    external: true
+    name: fs-05cff8083b4b0a091
+
+x-aws-cloudformation:
+  Resources:
+    # We convert external NFSMountTargets into something that we can have lots of and ignore, because
+    # external mount targets already exist and docker compose does not understand how to manage that
+    MyvolumenameNFSMountTargetOnSubnetN111111N:
+      &my-volume-mount-overlay
+      Type: AWS::EFS::AccessPoint
+      Properties:
+        SecurityGroups:
+        SubnetId:
+        FileSystemId: fs-04f9dba7972ff1b66
+        AccessPointTags:
+          - Key: Name
+            Value: fs-04f9dba7972ff1b66
+          - Key: com.docker.compose.project
+            Value: my-project-name
+          - Key: com.docker.compose.volume
+            Value: my_volume_name
+    MyvolumenameNFSMountTargetOnSubnetN222222N: *my-volume-mount-overlay
+    MyvolumenameNFSMountTargetOnSubnetN333333N: *my-volume-mount-overlay

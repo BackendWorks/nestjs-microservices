@@ -10,8 +10,9 @@
     "clean": "sudo sh clean.sh",
     "service-install": "sh install.sh",
     "stop": "docker-compose down",
+    "publish": "docker compose -f docker-compose.prod.yml up",
     "docker-build-dev": "docker-compose -f doccker-compose.dev.yml build",
-    "docker-build-prod": "docker-compose -f doccker-compose.prod.yml build" 
+    "docker-build-prod": "docker-compose -f doccker-compose.prod.yml build"
   },
   "repository": {
     "type": "git",
