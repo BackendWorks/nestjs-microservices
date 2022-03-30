@@ -4,15 +4,11 @@
   "description": "Nestjs Microservices Boilerplate",
   "scripts": {
     "format": "prettier --write \"**/src/**/*.ts\"",
-    "start": "cross-env NODE_ENV=development sh run.sh",
-    "prod": "cross-env NODE_ENV=production sh run.sh",
-    "build": "sudo sh build.sh",
-    "clean": "sudo sh clean.sh",
+    "start": "sh run.sh",
+    "build": "sh build.sh",
+    "clean": "sh clean.sh",
     "service-install": "sh install.sh",
-    "stop": "docker-compose down",
-    "publish": "docker compose -f docker-compose.prod.yml up",
-    "docker-build-dev": "docker-compose -f doccker-compose.dev.yml build",
-    "docker-build-prod": "docker-compose -f doccker-compose.prod.yml build"
+    "stop": "docker-compose down"
   },
   "repository": {
     "type": "git",

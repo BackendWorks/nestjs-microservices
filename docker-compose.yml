@@ -16,18 +16,18 @@ services:
     volumes:
       - ./user:/var/www/user
       - /var/www/user/node_modules
-    depends_on:
-      - database
-      - rabbitmq
     command:
       [
-        "./wait-for-it.sh",
+        "wait-for-it",
         "database:5432",
         "rabbitmq:5672",
         "--",
         "npm",
         "start"
       ]
+    depends_on:
+      - database
+      - rabbitmq
     links:
       - database
       - rabbitmq
@@ -51,7 +51,7 @@ services:
       - rabbitmq
     command:
       [
-        "./wait-for-it.sh",
+        "wait-for-it",
         "database:5432",
         "rabbitmq:5672",
         "--",
@@ -81,7 +81,7 @@ services:
       - rabbitmq
     command:
       [
-        "./wait-for-it.sh",
+        "wait-for-it",
         "mongodb:27017",
         "rabbitmq:5672",
         "--",
@@ -111,7 +111,7 @@ services:
       - rabbitmq
     command:
       [
-        "./wait-for-it.sh",
+        "wait-for-it",
         "mongodb:27017",
         "rabbitmq:5672",
         "--",
@@ -133,14 +133,7 @@ services:
       - backend
     depends_on:
       - rabbitmq
-    command:
-      [
-        "./wait-for-it.sh",
-        "rabbitmq:5672",
-        "--",
-        "npm",
-        "start"
-      ]
+    command: [ "wait-for-it", "rabbitmq:5672", "--", "npm", "start" ]
     volumes:
       - ./mailer:/var/www/mailer
       - /var/www/mailer/node_modules
@@ -158,15 +151,7 @@ services:
       - backend
     depends_on:
       - rabbitmq
-    command:
-      [
-        "./wait-for-it.sh",
-        "mongodb:27017",
-        "rabbitmq:5672",
-        "--",
-        "npm",
-        "start"
-      ]
+    command: [ "wait-for-it", "rabbitmq:5672", "--", "npm", "start" ]
     volumes:
       - ./token:/var/www/token
       - /var/www/token/node_modules
