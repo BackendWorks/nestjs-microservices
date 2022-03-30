@@ -46,12 +46,16 @@ npm run build
 
 ## Run
 
-Start service in development mode
+Start services in development mode
 ```
 npm start
 ```
+start services in production mode
+```
+npm run prod
+```
 
-## Build docker-compose file
+## Run docker-compose file with build
 
 Build docker-compose images 
 ```

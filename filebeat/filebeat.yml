@@ -1,8 +1,8 @@
 filebeat.inputs:
-- type: log
-  enabled: true
-  paths:
-    - /usr/share/filebeat/logs/*.log
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/filebeat/logs/*.log
 # docker compose logs
 # - type: container
 #   paths:
@@ -11,7 +11,6 @@ filebeat.inputs:
 processors:
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"
-
 
 output.logstash:
   hosts: ["logstash:5044"]

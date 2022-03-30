@@ -8,7 +8,8 @@
     "build": "sh build.sh",
     "clean": "sh clean.sh",
     "service-install": "sh install.sh",
-    "stop": "docker-compose down"
+    "stop": "docker-compose down",
+    "prod": "docker-compose -f docker-compose.prod.yml up"
   },
   "repository": {
     "type": "git",
