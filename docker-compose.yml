@@ -31,147 +31,147 @@ services:
     links:
       - database
       - rabbitmq
-  # post:
-  #   build:
-  #     context: ./post
-  #     dockerfile: Dockerfile
-  #   hostname: ${POST_HOST}
-  #   ports:
-  #     - ${POST_PORT}:${POST_PORT}
-  #   env_file:
-  #     - ./post/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./post:/var/www/post
-  #     - /var/www/post/node_modules
-  #   depends_on:
-  #     - database
-  #     - rabbitmq
-  #   command:
-  #     [
-  #       "wait-for-it",
-  #       "database:5432",
-  #       "rabbitmq:5672",
-  #       "--timeout=20",
-  #       "--",
-  #       "npm",
-  #       "start"
-  #     ]
-  #   links:
-  #     - database
-  #     - rabbitmq
-  # notification:
-  #   build:
-  #     context: ./notification
-  #     dockerfile: Dockerfile
-  #   hostname: ${NOTIFICATION_HOST}
-  #   ports:
-  #     - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
-  #   env_file:
-  #     - ./notification/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./notification:/var/www/notification
-  #     - /var/www/notification/node_modules
-  #   depends_on:
-  #     - mongodb
-  #     - rabbitmq
-  #   command:
-  #     [
-  #       "wait-for-it",
-  #       "mongodb:27017",
-  #       "rabbitmq:5672",
-  #       "--timeout=20",
-  #       "--",
-  #       "npm",
-  #       "start"
-  #     ]
-  #   links:
-  #     - mongodb
-  #     - rabbitmq
-  # files:
-  #   build:
-  #     context: ./files
-  #     dockerfile: Dockerfile
-  #   hostname: ${FILES_HOST}
-  #   ports:
-  #     - ${FILES_PORT}:${FILES_PORT}
-  #   env_file:
-  #     - ./files/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./files:/var/www/files
-  #     - /var/www/files/node_modules
-  #   depends_on:
-  #     - mongodb
-  #     - rabbitmq
-  #   command:
-  #     [
-  #       "wait-for-it",
-  #       "mongodb:27017",
-  #       "rabbitmq:5672",
-  #       "--timeout=20",
-  #       "--",
-  #       "npm",
-  #       "start"
-  #     ]
-  #   links:
-  #     - mongodb
-  #     - rabbitmq
-  # mailer:
-  #   build:
-  #     context: ./mailer
-  #     dockerfile: Dockerfile
-  #   hostname: ${MAILER_HOST}
-  #   env_file:
-  #     - ./mailer/.env
-  #   networks:
-  #     - backend
-  #   depends_on:
-  #     - rabbitmq
-  #   command:
-  #     [
-  #       "wait-for-it",
-  #       "rabbitmq:5672",
-  #       "--timeout=20",
-  #       "--",
-  #       "npm",
-  #       "start"
-  #     ]
-  #   volumes:
-  #     - ./mailer:/var/www/mailer
-  #     - /var/www/mailer/node_modules
-  #   links:
-  #     - rabbitmq
-  # logger:
-  #   build:
-  #     context: ./logger
-  #     dockerfile: Dockerfile
-  #   hostname: ${LOGGER_HOST}
-  #   env_file:
-  #     - ./logger/.env
-  #   command:
-  #     [
-  #       "wait-for-it",
-  #       "elasticsearch:9200",
-  #       "rabbitmq:5672",
-  #       "--timeout=20",
-  #       "--",
-  #       "npm",
-  #       "start"
-  #     ]
-  #   depends_on:
-  #     - rabbitmq
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./logger:/var/www/logger
-  #     - /var/www/logger/node_modules
-  #   links:
-  #     - rabbitmq
+  post:
+    build:
+      context: ./post
+      dockerfile: Dockerfile
+    hostname: ${POST_HOST}
+    ports:
+      - ${POST_PORT}:${POST_PORT}
+    env_file:
+      - ./post/.env
+    networks:
+      - backend
+    volumes:
+      - ./post:/var/www/post
+      - /var/www/post/node_modules
+    depends_on:
+      - database
+      - rabbitmq
+    command:
+      [
+        "wait-for-it",
+        "database:5432",
+        "rabbitmq:5672",
+        "--timeout=20",
+        "--",
+        "npm",
+        "start"
+      ]
+    links:
+      - database
+      - rabbitmq
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    hostname: ${NOTIFICATION_HOST}
+    ports:
+      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
+    env_file:
+      - ./notification/.env
+    networks:
+      - backend
+    volumes:
+      - ./notification:/var/www/notification
+      - /var/www/notification/node_modules
+    depends_on:
+      - mongodb
+      - rabbitmq
+    command:
+      [
+        "wait-for-it",
+        "mongodb:27017",
+        "rabbitmq:5672",
+        "--timeout=20",
+        "--",
+        "npm",
+        "start"
+      ]
+    links:
+      - mongodb
+      - rabbitmq
+  files:
+    build:
+      context: ./files
+      dockerfile: Dockerfile
+    hostname: ${FILES_HOST}
+    ports:
+      - ${FILES_PORT}:${FILES_PORT}
+    env_file:
+      - ./files/.env
+    networks:
+      - backend
+    volumes:
+      - ./files:/var/www/files
+      - /var/www/files/node_modules
+    depends_on:
+      - mongodb
+      - rabbitmq
+    command:
+      [
+        "wait-for-it",
+        "mongodb:27017",
+        "rabbitmq:5672",
+        "--timeout=20",
+        "--",
+        "npm",
+        "start"
+      ]
+    links:
+      - mongodb
+      - rabbitmq
+  mailer:
+    build:
+      context: ./mailer
+      dockerfile: Dockerfile
+    hostname: ${MAILER_HOST}
+    env_file:
+      - ./mailer/.env
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+    command:
+      [
+        "wait-for-it",
+        "rabbitmq:5672",
+        "--timeout=20",
+        "--",
+        "npm",
+        "start"
+      ]
+    volumes:
+      - ./mailer:/var/www/mailer
+      - /var/www/mailer/node_modules
+    links:
+      - rabbitmq
+  logger:
+    build:
+      context: ./logger
+      dockerfile: Dockerfile
+    hostname: ${LOGGER_HOST}
+    env_file:
+      - ./logger/.env
+    command:
+      [
+        "wait-for-it",
+        "elasticsearch:9200",
+        "rabbitmq:5672",
+        "--timeout=20",
+        "--",
+        "npm",
+        "start"
+      ]
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+    volumes:
+      - ./logger:/var/www/logger
+      - /var/www/logger/node_modules
+    links:
+      - rabbitmq
   token:
     build:
       context: ./token
@@ -244,26 +244,26 @@ services:
       - .env
     networks:
       - backend
-  # cache:
-  #   hostname: redis
-  #   image: redis:latest
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - backend
-  # mongodb:
-  #   hostname: mongodb
-  #   image: mongo:latest
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: admin
-  #     MONGO_INITDB_ROOT_PASSWORD: master123
-  #   ports:
-  #     - 27018:27017
-  #   volumes:
-  #     - mongodb:/data/db
-  #   networks:
-  #     - backend
+  cache:
+    hostname: redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+  mongodb:
+    hostname: mongodb
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - 27018:27017
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - backend
   elasticsearch:
     build:
       context: ./elasticsearch
