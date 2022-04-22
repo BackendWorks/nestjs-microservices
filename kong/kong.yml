@@ -2,12 +2,12 @@ _format_version: "2.1"
 _transform: true
 
 services:
-  - name: post
-    url: http://post:8002
-    routes:
+  - name: post # Name of service
+    url: http://post:8002 # service Endpoint
+    routes: # Define routes here
       - name: post
         paths:
-          - /post
+          - /post # service path
   - name: user
     url: http://user:8001
     routes:
