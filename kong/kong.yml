@@ -7,7 +7,7 @@ services:
     routes:
       - name: post
         paths:
-          - /post
+          - /post # service path
   - name: user
     url: http://user:9001
     routes:
