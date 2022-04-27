@@ -5,5 +5,4 @@ for entry in */; do
         cp -r .env $entry.env
     fi
 done
-echo "starting docker-compose..."
-docker-compose up
+# docker-compose up

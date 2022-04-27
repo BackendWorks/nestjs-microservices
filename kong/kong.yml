@@ -3,25 +3,25 @@ _transform: true
 
 services:
   - name: post
-    url: http://post:8002
+    url: http://post:9002
     routes:
       - name: post
         paths:
           - /post
   - name: user
-    url: http://user:8001
+    url: http://user:9001
     routes:
       - name: user
         paths:
           - /user
   - name: files
-    url: http://files:8003
+    url: http://files:9003
     routes:
       - name: files
         paths:
           - /files
   - name: notification
-    url: http://notification:8004
+    url: http://notification:9004
     routes:
       - name: notification
         paths:

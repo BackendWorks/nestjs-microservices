@@ -100,3 +100,4 @@ dist
 
 # env file
 .env
+.prod.env

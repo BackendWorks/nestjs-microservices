@@ -1,10 +1,11 @@
-version: "3.2"
+version: "3"
 
 services:
   user:
     build:
       context: ./user
       dockerfile: Dockerfile
+    restart: always
     hostname: ${USER_HOST}
     ports:
       - ${USER_PORT}:${USER_PORT}
@@ -15,22 +16,28 @@ services:
     volumes:
       - ./user:/var/www/user
       - /var/www/user/node_modules
-    command:
-      [
-        "wait-for-it",
-        "database:5432",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
     depends_on:
-      - database
-      - rabbitmq
-    links:
-      - database
-      - rabbitmq
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+  token:
+    build:
+      context: ./token
+      dockerfile: Dockerfile
+    restart: always
+    hostname: ${TOKEN_HOST}
+    env_file:
+      - ./token/.env
+    networks:
+      - backend
+    depends_on:
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   post:
     build:
       context: ./post
@@ -46,21 +53,11 @@ services:
       - ./post:/var/www/post
       - /var/www/post/node_modules
     depends_on:
-      - database
-      - rabbitmq
-    command:
-      [
-        "wait-for-it",
-        "database:5432",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
-    links:
-      - database
-      - rabbitmq
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   notification:
     build:
       context: ./notification
@@ -76,21 +73,11 @@ services:
       - ./notification:/var/www/notification
       - /var/www/notification/node_modules
     depends_on:
-      - mongodb
-      - rabbitmq
-    command:
-      [
-        "wait-for-it",
-        "mongodb:27017",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
-    links:
-      - mongodb
-      - rabbitmq
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   files:
     build:
       context: ./files
@@ -106,106 +93,41 @@ services:
       - ./files:/var/www/files
       - /var/www/files/node_modules
     depends_on:
-      - mongodb
-      - rabbitmq
-    command:
-      [
-        "wait-for-it",
-        "mongodb:27017",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
-    links:
-      - mongodb
-      - rabbitmq
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   mailer:
     build:
       context: ./mailer
       dockerfile: Dockerfile
+    restart: always
     hostname: ${MAILER_HOST}
     env_file:
       - ./mailer/.env
     networks:
       - backend
     depends_on:
-      - rabbitmq
-    command:
-      [
-        "wait-for-it",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
+      - fluent-bit
     volumes:
       - ./mailer:/var/www/mailer
       - /var/www/mailer/node_modules
-    links:
-      - rabbitmq
-  logger:
-    build:
-      context: ./logger
-      dockerfile: Dockerfile
-    hostname: ${LOGGER_HOST}
-    env_file:
-      - ./logger/.env
-    command:
-      [
-        "wait-for-it",
-        "elasticsearch:9200",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
-    depends_on:
-      - rabbitmq
-    networks:
-      - backend
-    volumes:
-      - ./logger:/var/www/logger
-      - /var/www/logger/node_modules
-    links:
-      - rabbitmq
-  token:
-    build:
-      context: ./token
-      dockerfile: Dockerfile
-    hostname: ${TOKEN_HOST}
-    env_file:
-      - ./token/.env
-    networks:
-      - backend
-    depends_on:
-      - rabbitmq
-    command:
-      [
-        "wait-for-it",
-        "rabbitmq:5672",
-        "--timeout=20",
-        "--",
-        "npm",
-        "start"
-      ]
-    volumes:
-      - ./token:/var/www/token
-      - /var/www/token/node_modules
-    links:
-      - rabbitmq
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   kong:
-    hostname: kong
     build:
       context: ./kong
       dockerfile: Dockerfile
+    container_name: kong
     restart: always
     networks:
       - backend
     command: "kong start"
+    depends_on:
+      - fluent-bit
     volumes:
       - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml
     environment:
@@ -214,14 +136,18 @@ services:
       KONG_PROXY_LISTEN: 0.0.0.0:8080
       KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
       KONG_ADMIN_LISTEN: 0.0.0.0:9000
-    depends_on:
-      - database
     ports:
       - "8080:8080"
       - "9000:9000"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   database:
-    hostname: database
     image: postgres:latest
+    container_name: postgres
+    depends_on:
+      - fluent-bit
     ports:
       - 5431:5432
     environment:
@@ -232,9 +158,15 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   rabbitmq:
-    hostname: rabbitmq
     image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    depends_on:
+      - fluent-bit
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     ports:
@@ -244,6 +176,10 @@ services:
       - .env
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   cache:
     hostname: redis
     image: redis:latest
@@ -252,8 +188,11 @@ services:
       - "6379:6379"
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
   mongodb:
-    hostname: mongodb
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -264,80 +203,56 @@ services:
       - mongodb:/data/db
     networks:
       - backend
-  elasticsearch:
-    build:
-      context: ./elasticsearch
-      dockerfile: Dockerfile
-    volumes:
-      - type: volume
-        source: es_data
-        target: /usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+  fluent-bit:
+    image: grafana/fluent-bit-plugin-loki:latest
+    container_name: fluent-bit
     environment:
-      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
-      ELASTIC_PASSWORD: changeme
-      discovery.type: single-node
-    networks:
-      - elk
-  logstash:
-    build:
-      context: ./logstash
-      dockerfile: Dockerfile
-    ports:
-      - 5044:5044
-    environment:
-      LS_JAVA_OPTS: "-Xmx2g -Xms2g"
-    networks:
-      - elk
-    depends_on:
-      - elasticsearch
-
-  kibana:
-    build:
-      context: ./kibana
-      dockerfile: Dockerfile
-    ports:
-      - "5601:5601"
-    networks:
-      - elk
-    depends_on:
-      - elasticsearch
-  filebeat:
-    restart: on-failure
-    build:
-      context: ./filebeat
-      dockerfile: Dockerfile
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
     volumes:
-      - type: bind
-        source: ./logger/logs
-        target: /usr/share/filebeat/logs
-      # - type: bind
-      #   source: /var/run/docker.sock
-      #   target: /var/run/docker.sock
-      #   read_only: true
-      # - type: bind
-      #   source: /var/lib/docker/containers/
-      #   target: /var/lib/docker/containers/
-      #   read_only: true
-    command: " ./filebeat -c filebeat.yml -e -strict.perms=false"
-    depends_on:
-      - elasticsearch
+      - ./fluent-bit/conf/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
     networks:
-      - elk
-
+      - backend
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    expose:
+      - "3100"
+    networks:
+      - backend
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+    networks:
+      - backend
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    container_name: grafana-image-renderer
+    expose:
+      - "8081"
+    environment:
+      ENABLE_METRICS: "true"
+    networks:
+      - backend
 networks:
   backend:
-    driver: bridge
-  elk:
     driver: bridge
 volumes:
   pg_data:
     driver: local
-  mongodb:
-    driver: local
   rabbit_data:
     driver: local
-  es_data:
+  mongodb:
     driver: local
