@@ -13,6 +13,7 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - Loki - https://grafana.com/oss/loki/
 - Fluent-Bit - https://fluentbit.io/
 ## Get started
+- use `git submodule update --init --recursive` command to update/fetch submodules.
 - `AUTO RELOAD` is enabled for docker-compose on file changes using docker volumes. so, If you do any kind of changes in local it will automatically reflect to docker containers.
 - Services are included with type-safe interfaces worker, queues(Redis), log drivers.
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
