@@ -16,6 +16,3 @@
 [submodule "files"]
 	path = files
 	url = https://github.com/BackendWorks/files.git
-[submodule "logger"]
-	path = logger
-	url = https://github.com/BackendWorks/logger.git

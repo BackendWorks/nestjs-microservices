@@ -2,18 +2,18 @@ _format_version: "2.1"
 _transform: true
 
 services:
-  - name: post
-    url: http://post:9002
-    routes:
-      - name: post
-        paths:
-          - /post # service path
   - name: user
     url: http://user:9001
     routes:
       - name: user
         paths:
           - /user
+  - name: post
+    url: http://post:9002
+    routes:
+      - name: post
+        paths:
+          - /post
   - name: files
     url: http://files:9003
     routes:

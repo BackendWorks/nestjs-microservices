@@ -72,6 +72,17 @@ services:
       - 27017:27017
     volumes:
       - mongo_data:/data/db
+  fluent-bit:
+    hostname: fluentd
+    build:
+      context: ./fluent-bit
+      dockerfile: Dockerfile
+    container_name: fluent-bit
+    environment:
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
 volumes:
   mongo_data:
     driver_opts:
