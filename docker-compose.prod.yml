@@ -1,35 +1,32 @@
-version: "3.2"
+version: "3"
+
 services:
   user:
-    image: hmake98/nestms-user:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:user
     env_file:
       - ./user/.env
   post:
-    image: hmake98/nestms-post:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:post
     env_file:
       - ./post/.env
   notification:
-    image: hmake98/nestms-notification:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:notification
     env_file:
       - ./notification/.env
   files:
-    image: hmake98/nestms-files:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:files
     env_file:
       - ./files/.env
   mailer:
-    image: hmake98/nestms-mailer:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:mailer
     env_file:
       - ./mailer/.env
-  logger:
-    image: hmake98/nestms-logger:latest
-    env_file:
-      - ./logger/.env
   token:
-    image: hmake98/nestms-token:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:token
     env_file:
       - ./token/.env
   kong:
-    image: hmake98/kong:latest
+    image: 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:kong
     command: "kong start"
     environment:
       KONG_DATABASE: "off"
@@ -51,7 +48,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   rabbitmq:
-    image: "rabbitmq:3-management"
+    image: rabbitmq:3-management
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     ports:
@@ -72,17 +69,6 @@ services:
       - 27017:27017
     volumes:
       - mongo_data:/data/db
-  fluent-bit:
-    hostname: fluentd
-    build:
-      context: ./fluent-bit
-      dockerfile: Dockerfile
-    container_name: fluent-bit
-    environment:
-      - LOKI_URL=http://loki:3100/loki/api/v1/push
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
 volumes:
   mongo_data:
     driver_opts:

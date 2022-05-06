@@ -1,11 +1,13 @@
 #!/bin/sh
 # remove slash from last echo ${@%/}
 for entry in */; do
-    if [ -e $entry/nest-cli.json ]; then
-        cp -r .prod.env $entry.env
+    if [ -e $entry/Dockerfile.prod ]; then
         cd $entry
-        docker build -t ${entry@%/}:latest -f Dockerfile.prod .
-        docker push hmake98/${entry@%/}:latest
+        echo "Deploying ${entry%/} service..."
+        docker build -t nestjs-ms:${entry%/} -f Dockerfile.prod .
+        docker tag nestjs-ms:${entry%/} 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:${entry%/}
+        docker push 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-ms:${entry%/}
         cd ..
     fi
 done
+
