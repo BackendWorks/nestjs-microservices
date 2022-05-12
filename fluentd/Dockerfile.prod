@@ -1,0 +1,2 @@
+FROM grafana/fluent-plugin-loki:master
+COPY ./conf/fluent-prod.conf /fluent-bit/etc/fluent-bit.conf
