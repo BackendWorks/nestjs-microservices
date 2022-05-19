@@ -123,8 +123,6 @@ services:
       dockerfile: Dockerfile
     container_name: kong
     restart: on-failure
-    networks:
-      - backend
     command: "kong start"
     volumes:
       - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml
@@ -137,120 +135,122 @@ services:
     ports:
       - "8080:8080"
       - "9000:9000"
+    networks:
+      - backend
     logging:
       driver: fluentd
       options:
         fluentd-async: "true"
         fluentd-address: 3.108.64.114:24224
         tag: kong
-  # database:
-  #   image: postgres:latest
-  #   restart: on-failure
-  #   container_name: postgres
-  #   hostname: database
-  #   ports:
-  #     - 5432:5432
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=master123
-  #     - POSTGRES_DB=postgres
-  #   volumes:
-  #     - pg_data:/var/lib/postgresql/data
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 3.108.64.114:24224
-  #       tag: database
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   restart: on-failure
-  #   container_name: rabbitmq
-  #   hostname: rabbitmq
-  #   volumes:
-  #     - rabbit_data:/var/lib/rabbitmq
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 3.108.64.114:24224
-  #       tag: rabbitmq
-  # cache:
-  #   hostname: redis
-  #   image: redis:latest
-  #   restart: on-failure
-  #   container_name: redis
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 3.108.64.114:24224
-  #       tag: cache
-  # mongodb:
-  #   image: mongo:latest
-  #   container_name: mongodb
-  #   restart: on-failure
-  #   hostname: mongodb
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: admin
-  #     MONGO_INITDB_ROOT_PASSWORD: master123
-  #   ports:
-  #     - 27017:27017
-  #   volumes:
-  #     - mongo_data:/data/db
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 3.108.64.114:24224
-  #       tag: mongodb
-  # fluent-bit:
-  #   container_name: fluentd
-  #   hostname: fluentd
-  #   build:
-  #     context: ./fluent-bit
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "24224:24224"
-  #   networks:
-  #     - backend
-  # loki:
-  #   image: grafana/loki:latest
-  #   restart: on-failure
-  #   container_name: loki
-  #   expose:
-  #     - "3100"
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   restart: on-failure
-  #   container_name: grafana
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     GF_RENDERING_SERVER_URL: http://renderer:8081/render
-  #     GF_RENDERING_CALLBACK_URL: http://grafana:3000/
-  #     GF_LOG_FILTERS: rendering:debug
-  # renderer:
-  #   image: grafana/grafana-image-renderer:latest
-  #   restart: on-failure
-  #   container_name: grafana-image-renderer
-  #   expose:
-  #     - "8081"
-  #   environment:
-  #     ENABLE_METRICS: "true"
+  database:
+    image: postgres:latest
+    restart: on-failure
+    container_name: postgres
+    hostname: database
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=master123
+      - POSTGRES_DB=postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
+        tag: database
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: on-failure
+    container_name: rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
+        tag: rabbitmq
+  cache:
+    hostname: redis
+    image: redis:latest
+    restart: on-failure
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
+        tag: cache
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: on-failure
+    hostname: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
+        tag: mongodb
+  fluent-bit:
+    container_name: fluentd
+    hostname: fluentd
+    build:
+      context: ./fluent-bit
+      dockerfile: Dockerfile
+    ports:
+      - "24224:24224"
+    networks:
+      - backend
+  loki:
+    image: grafana/loki:latest
+    restart: on-failure
+    container_name: loki
+    expose:
+      - "3100"
+  grafana:
+    image: grafana/grafana:latest
+    restart: on-failure
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    restart: on-failure
+    container_name: grafana-image-renderer
+    expose:
+      - "8081"
+    environment:
+      ENABLE_METRICS: "true"
 networks:
   backend:
     driver: bridge
