@@ -11,19 +11,16 @@ services:
       - "9001:9001"
     env_file:
       - ./user/.env
-    environment:
-      WAIT_HOSTS: postgres:5432, rabbitmq:5672
     networks:
       - backend
     volumes:
       - ./user:/var/www/user
       - /var/www/user/node_modules
-    depends_on:
-      - fluentd
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: user-service
   token:
     build:
@@ -31,18 +28,15 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     hostname: token
-    environment:
-      WAIT_HOSTS: rabbitmq:5672
     env_file:
       - ./token/.env
     networks:
       - backend
-    depends_on:
-      - fluentd
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: token-service
   post:
     build:
@@ -51,8 +45,6 @@ services:
     hostname: post
     ports:
       - 9002:9002
-    environment:
-      WAIT_HOSTS: postgres:5432, rabbitmq:5672
     env_file:
       - ./post/.env
     networks:
@@ -60,12 +52,11 @@ services:
     volumes:
       - ./post:/var/www/post
       - /var/www/post/node_modules
-    depends_on:
-      - fluentd
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: post-service
   notification:
     build:
@@ -74,8 +65,6 @@ services:
     hostname: notification
     ports:
       - 9004:9004
-    environment:
-      WAIT_HOSTS: mongodb:27017, rabbitmq:5672
     env_file:
       - ./notification/.env
     networks:
@@ -83,12 +72,11 @@ services:
     volumes:
       - ./notification:/var/www/notification
       - /var/www/notification/node_modules
-    depends_on:
-      - fluentd
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: notification-service
   files:
     build:
@@ -97,8 +85,6 @@ services:
     hostname: files
     ports:
       - 9003:9003
-    environment:
-      WAIT_HOSTS: mongodb:27017, rabbitmq:5672
     env_file:
       - ./files/.env
     networks:
@@ -106,12 +92,11 @@ services:
     volumes:
       - ./files:/var/www/files
       - /var/www/files/node_modules
-    depends_on:
-      - fluentd
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: files-service
   mailer:
     build:
@@ -119,21 +104,18 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     hostname: mailer
-    environment:
-      WAIT_HOSTS: rabbitmq:5672
     env_file:
       - ./mailer/.env
     networks:
       - backend
-    depends_on:
-      - fluentd
     volumes:
       - ./mailer:/var/www/mailer
       - /var/www/mailer/node_modules
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: mailer-service
   kong:
     build:
@@ -144,8 +126,6 @@ services:
     networks:
       - backend
     command: "kong start"
-    depends_on:
-      - fluentd
     volumes:
       - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml
     environment:
@@ -160,88 +140,93 @@ services:
     logging:
       driver: fluentd
       options:
-        fluentd-address: host.docker.internal:24224
+        fluentd-async: "true"
+        fluentd-address: 3.108.64.114:24224
         tag: kong
-  database:
-    image: postgres:latest
-    restart: on-failure
-    container_name: postgres
-    hostname: database
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=master123
-      - POSTGRES_DB=postgres
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: host.docker.internal:24224
-        tag: database
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    restart: on-failure
-    container_name: rabbitmq
-    hostname: rabbitmq
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
-    ports:
-      - "5672:5672"
-      - "15671:15672"
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: host.docker.internal:24224
-        tag: rabbitmq
-  cache:
-    hostname: redis
-    image: redis:latest
-    restart: on-failure
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: host.docker.internal:24224
-        tag: cache
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    restart: on-failure
-    hostname: mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: master123
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: host.docker.internal:24224
-        tag: mongodb
-  fluentd:
-    container_name: fluentd
-    hostname: fluentd
-    build:
-      context: ./fluentd
-      dockerfile: Dockerfile
-    ports:
-      - "24224:24224"
-    networks:
-      - backend
+  # database:
+  #   image: postgres:latest
+  #   restart: on-failure
+  #   container_name: postgres
+  #   hostname: database
+  #   ports:
+  #     - 5432:5432
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=master123
+  #     - POSTGRES_DB=postgres
+  #   volumes:
+  #     - pg_data:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
+  #   logging:
+  #     driver: fluentd
+  #     options:
+  #       fluentd-async: "true"
+  #       fluentd-address: 3.108.64.114:24224
+  #       tag: database
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   restart: on-failure
+  #   container_name: rabbitmq
+  #   hostname: rabbitmq
+  #   volumes:
+  #     - rabbit_data:/var/lib/rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   networks:
+  #     - backend
+  #   logging:
+  #     driver: fluentd
+  #     options:
+  #       fluentd-async: "true"
+  #       fluentd-address: 3.108.64.114:24224
+  #       tag: rabbitmq
+  # cache:
+  #   hostname: redis
+  #   image: redis:latest
+  #   restart: on-failure
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - backend
+  #   logging:
+  #     driver: fluentd
+  #     options:
+  #       fluentd-async: "true"
+  #       fluentd-address: 3.108.64.114:24224
+  #       tag: cache
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: mongodb
+  #   restart: on-failure
+  #   hostname: mongodb
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: master123
+  #   ports:
+  #     - 27017:27017
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   networks:
+  #     - backend
+  #   logging:
+  #     driver: fluentd
+  #     options:
+  #       fluentd-async: "true"
+  #       fluentd-address: 3.108.64.114:24224
+  #       tag: mongodb
+  # fluent-bit:
+  #   container_name: fluentd
+  #   hostname: fluentd
+  #   build:
+  #     context: ./fluent-bit
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "24224:24224"
+  #   networks:
+  #     - backend
   # loki:
   #   image: grafana/loki:latest
   #   restart: on-failure

@@ -1,0 +1,28 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: user-service
+    url: http://user:9001
+    routes:
+      - name: user-route
+        paths:
+          - /user
+  - name: post-service
+    url: http://post:9002
+    routes:
+      - name: post-route
+        paths:
+          - /post
+  - name: files-service
+    url: http://files:9003
+    routes:
+      - name: files-route
+        paths:
+          - /files
+  - name: notification-service
+    url: http://notification:9004
+    routes:
+      - name: notification-route
+        paths:
+          - /notification
