@@ -1,3 +1,0 @@
-FROM kong:latest
-COPY kong.prod.yml /usr/local/kong/declarative/kong.yml
-CMD ["kong start"]

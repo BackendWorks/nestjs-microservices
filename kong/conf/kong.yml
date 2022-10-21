@@ -2,26 +2,34 @@ _format_version: "2.1"
 _transform: true
 
 services:
-  - name: user-service
-    url: http://user:9001
+  - name: auth-service
+    host: user
+    port: 9001
+    protocol: http
     routes:
-      - name: user-route
+      - name: auth-route
         paths:
-          - /user
+          - /auth
   - name: post-service
-    url: http://post:9002
+    host: post
+    port: 9002
+    protocol: http
     routes:
       - name: post-route
         paths:
           - /post
   - name: files-service
-    url: http://files:9003
+    host: files
+    port: 9003
+    protocol: http
     routes:
       - name: files-route
         paths:
           - /files
   - name: notification-service
-    url: http://notification:9004
+    host: notification
+    port: 9004
+    protocol: http
     routes:
       - name: notification-route
         paths:
