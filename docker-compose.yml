@@ -16,12 +16,12 @@ services:
     volumes:
       - ./auth:/var/www/auth
       - /var/www/auth/node_modules
-    # logging:
-    #   driver: fluentd
-    #   options:
-    #     fluentd-async: "true"
-    #     fluentd-address: 192.168.29.38:24224
-    #     tag: auth-service
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: auth-service
   post:
     build:
       context: ./post
@@ -36,71 +36,71 @@ services:
     volumes:
       - ./post:/var/www/post
       - /var/www/post/node_modules
-    # logging:
-    #   driver: fluentd
-    #   options:
-    #     fluentd-async: "true"
-    #     fluentd-address: 192.168.29.38:24224
-    #     tag: post-service
-  # notification:
-  #   build:
-  #     context: ./notification
-  #     dockerfile: Dockerfile
-  #   hostname: notification
-  #   ports:
-  #     - "9004:9004"
-  #   env_file:
-  #     - ./notification/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./notification:/var/www/notification
-  #     - /var/www/notification/node_modules
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 192.168.29.38:24224
-  #       tag: notification-service
-  # files:
-  #   build:
-  #     context: ./files
-  #     dockerfile: Dockerfile
-  #   hostname: files
-  #   ports:
-  #     - "9003:9003"
-  #   env_file:
-  #     - ./files/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./files:/var/www/files
-  #     - /var/www/files/node_modules
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 192.168.29.38:24224
-  #       tag: files-service
-  # mailer:
-  #   build:
-  #     context: ./mailer
-  #     dockerfile: Dockerfile
-  #   restart: unless-stopped
-  #   hostname: mailer
-  #   env_file:
-  #     - ./mailer/.env
-  #   networks:
-  #     - backend
-  #   volumes:
-  #     - ./mailer:/var/www/mailer
-  #     - /var/www/mailer/node_modules
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 192.168.29.38:24224
-  #       tag: mailer-service
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: post-service
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    hostname: notification
+    ports:
+      - "9004:9004"
+    env_file:
+      - ./notification/.env
+    networks:
+      - backend
+    volumes:
+      - ./notification:/var/www/notification
+      - /var/www/notification/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: notification-service
+  files:
+    build:
+      context: ./files
+      dockerfile: Dockerfile
+    hostname: files
+    ports:
+      - "9003:9003"
+    env_file:
+      - ./files/.env
+    networks:
+      - backend
+    volumes:
+      - ./files:/var/www/files
+      - /var/www/files/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: files-service
+  mailer:
+    build:
+      context: ./mailer
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    hostname: mailer
+    env_file:
+      - ./mailer/.env
+    networks:
+      - backend
+    volumes:
+      - ./mailer:/var/www/mailer
+      - /var/www/mailer/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: mailer-service
   kong:
     build:
       context: ./kong
@@ -125,12 +125,12 @@ services:
       - "8001:8001"
     networks:
       - backend
-    # logging:
-    #   driver: fluentd
-    #   options:
-    #     fluentd-async: "true"
-    #     fluentd-address: 192.168.29.38:24224
-    #     tag: kong
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: kong
   database:
     image: postgres:latest
     restart: on-failure
@@ -146,12 +146,12 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - backend
-    # logging:
-    #   driver: fluentd
-    #   options:
-    #     fluentd-async: "true"
-    #     fluentd-address: 192.168.29.38:24224
-    #     tag: database
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: database
   rabbitmq:
     image: rabbitmq:3-management
     restart: on-failure
@@ -164,91 +164,91 @@ services:
       - "15672:15672"
     networks:
       - backend
-    # logging:
-    #   driver: fluentd
-    #   options:
-    #     fluentd-async: "true"
-    #     fluentd-address: 192.168.29.38:24224
-    #     tag: rabbitmq
-  # cache:
-  #   hostname: redis
-  #   image: redis:latest
-  #   restart: on-failure
-  #   container_name: redis
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 192.168.29.38:24224
-  #       tag: cache
-  # mongodb:
-  #   image: mongo:latest
-  #   container_name: mongodb
-  #   restart: on-failure
-  #   hostname: mongodb
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: admin
-  #     MONGO_INITDB_ROOT_PASSWORD: master123
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo_data:/data/db
-  #   networks:
-  #     - backend
-  #   logging:
-  #     driver: fluentd
-  #     options:
-  #       fluentd-async: "true"
-  #       fluentd-address: 192.168.29.38:24224
-  #       tag: mongodb
-  # fluent-bit:
-  #   container_name: fluent-bit
-  #   environment:
-  #     LOKI_URL: http://loki:3100/loki/api/v1/push
-  #   build:
-  #     context: ./fluent-bit
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "24224:24224"
-  #     - "24224:24224/udp"
-  #   networks:
-  #     - loki
-  # loki:
-  #   image: grafana/loki:latest
-  #   container_name: loki
-  #   expose:
-  #     - "3100"
-  #   networks:
-  #     - loki
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     GF_RENDERING_SERVER_URL: http://renderer:8081/render
-  #     GF_RENDERING_CALLBACK_URL: http://grafana:3000/
-  #     GF_LOG_FILTERS: rendering:debug
-  #   networks:
-  #     - loki
-  # renderer:
-  #   image: grafana/grafana-image-renderer:latest
-  #   container_name: grafana-image-renderer
-  #   expose:
-  #     - "8081"
-  #   environment:
-  #     ENABLE_METRICS: "true"
-  #   networks:
-  #     - loki
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: rabbitmq
+  cache:
+    hostname: redis
+    image: redis:latest
+    restart: on-failure
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: cache
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: on-failure
+    hostname: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: 192.168.29.38:24224
+        tag: mongodb
+  fluent-bit:
+    container_name: fluent-bit
+    environment:
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    build:
+      context: ./fluent-bit
+      dockerfile: Dockerfile
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - loki
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    expose:
+      - "3100"
+    networks:
+      - loki
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+    networks:
+      - loki
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    container_name: grafana-image-renderer
+    expose:
+      - "8081"
+    environment:
+      ENABLE_METRICS: "true"
+    networks:
+      - loki
 networks:
   backend:
     driver: bridge
-  # loki:
-  #   driver: bridge
+  loki:
+    driver: bridge
 volumes:
   pg_data:
     driver: local

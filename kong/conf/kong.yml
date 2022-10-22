@@ -3,7 +3,7 @@ _transform: true
 
 services:
   - name: auth-service
-    host: user
+    host: auth
     port: 9001
     protocol: http
     routes:

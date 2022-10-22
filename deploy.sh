@@ -1,5 +1,6 @@
-#!/bin/sh
+# to deploy containers to container registry service, first you have to configure aws cli into your system.
 # remove slash from last echo ${@%/}
+#!/bin/sh
 for entry in */; do
     if [ -e $entry/Dockerfile.prod ]; then
         cd $entry

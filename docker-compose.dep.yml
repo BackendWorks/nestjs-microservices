@@ -1,0 +1,63 @@
+version: "3"
+
+services:
+  database:
+    image: postgres:latest
+    restart: on-failure
+    container_name: postgres
+    hostname: database
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=master123
+      - POSTGRES_DB=postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: on-failure
+    container_name: rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+  cache:
+    hostname: redis
+    image: redis:latest
+    restart: on-failure
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: on-failure
+    hostname: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+volumes:
+  pg_data:
+    driver: local
+  rabbit_data:
+    driver: local
+  mongo_data:
+    driver: local
