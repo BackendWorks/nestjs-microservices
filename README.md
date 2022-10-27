@@ -1,8 +1,6 @@
 # Nest Microservices with RabbitMQ (Basic Version)
 Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Redis Queues, Firebase Cloud Notifications.
 
-![Microservice drawio (2)](https://user-images.githubusercontent.com/23061515/160799926-6ea731ae-ff63-4044-9452-b58f3cbe99a3.png)
-
 ## Dependencies & Services
 - RabbitMQ - https://www.rabbitmq.com/
 - Redis - https://redis.io/
@@ -14,16 +12,14 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - Fluent-Bit - https://fluentbit.io/
 ## Get started
 - use `git submodule update --init --recursive` command to update/fetch submodules.
-- `AUTO RELOAD` is enabled for docker-compose on file changes using docker volumes. so, If you do any kind of changes in local it will automatically reflect to docker containers.
-- Services are included with type-safe interfaces worker, queues(Redis), log drivers.
+- copy env variables from each submodule repo from `example.env` file. 
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
 
-## Setting up an environment
-- Core dependencies such as RabbitMQ, Postgres database, Redis connection, MongoDB services are required to start all services together.
-- You can use `docker-compose` to setting up all Core services Or you can install it in your own system one by one.
-- Use `example.env` as reference.
-- `kong.yml` file will be used for routing of services. after creating new service, define any new services in `kong.yml` first.
-- The development server will start on port `8080`. so, base url for server would be `http://localhost:8080`. you can reconfigure this prefix path in `kong.yml`.
+## Setting up an environment notes:
+- you can start local environment by running `docker-compose.test.yml` file. file only contains service dependencies so that you don't need to start each service seperatly on your own. but keep in mind that if you're running any of the service in local then you need to change `.env` and replace all docker host variables to `localhost`. otherwise it will throw an error. 
+- you can start all services together using `docker-compose up`. keep in mind that you will have to change environment variables to docker host variables as we're running all the services in docker and docker can't find local network in the container.
+- `kong.yml` file will be used for routing of services. after creating new service, define that service in `kong.yml` first.
+- The development server will start on port `8000`. 
 
 ## Setup Grafana Dashboard
 To see the logs on Grafana dashboard, you can follow YouTube video or below steps.
@@ -33,49 +29,27 @@ To see the logs on Grafana dashboard, you can follow YouTube video or below step
 4. loki else you have to enter host IP address and port here, click on Save and Test button from the bottom of the page.
 5. Now, go to 3rd tab Explore from the left sidebar or http://localhost:3000/explore
 
-## Installation
+## Run in local
 
-Install dependencies for root.
+1. first start all deps from `docker-compose.test.yml`
 ```
-npm install
-```
-
-Install service deps
-```
-npm run service-install
+docker-compose -f docker-compose.test.yml up 
 ```
 
-## Build
-
-Build services
-```
-npm run build
-```
-
-## Run
-
-Start services in development mode
+2. to start any service in development mode
 ```
 npm start
 ```
-start services in production mode
-```
-npm run prod
-```
 
-## Run docker-compose file with build
+3. then you can access service endpoint directly using localhost.
 
-Build docker-compose images 
-```
-docker-compose up --build
-```
+## Run in docker 
 
-## Clean build folders
-
-Clean build folders in services
+1. build docker-compose images 
 ```
-npm run clean
+docker-compose up 
 ```
+2. and then you can access services from kong api gateway on port `8000`. 
 
 ## Deployment
 
@@ -84,15 +58,15 @@ Deploy services to dockerhub.
 sh deploy.sh
 ```
 Notes:
-- Also use this script to deploy services to ECR. Do changes in `deploy.sh` script accordingly.
+- you can also use this script to deploy services to ECR. change `deploy.sh` script accordingly.
 - Use `.prod.env` file for deployment of the services. 
-- Deployment can be done in two ways
-  - Docker compose context method (Cloud Formation). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
+- you can follow deployment process as below
+  - Docker compose context method (Cloud Formation with compose CLI). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
   - Use ECS CLI method. follow this (Blog)[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-fargate.html]
 ## Docker Notes:
 - Use `hostname` of service to connect service internally in local docker environment.
 - for rebuild all services use command `docker-compose up --build`.  
-- Use `docker-compose.prod.yml` for deployment.
+- Use `docker-compose.prod.yml` for deployment if you're following `compose cli` deployment strategy.
 
 ## Blogs and References:
 - https://www.infracloud.io/blogs/logging-in-kubernetes-efk-vs-plg-stack/
