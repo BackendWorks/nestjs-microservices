@@ -1,19 +1,11 @@
 {
   "name": "nestjs-microservices",
   "version": "1.0.0",
-  "description": "Nestjs Microservices Boilerplate",
+  "description": "Nestjs RabbitMQ Microservices Boilerplate",
   "scripts": {
-    "format": "prettier --write \"**/src/**/*.ts\"",
-    "start": "sh run.sh",
-    "build": "sh build.sh",
-    "clean": "sh clean.sh",
-    "service-install": "sh install.sh",
-    "stop": "docker-compose down",
-    "prod": "docker-compose -f docker-compose.prod.yml up"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hmake98/nestjs-microservices.git"
+    "deploy": "sh deploy.sh",
+    "core:down": "docker-compose -f docker-compose.core.yml down",
+    "core:up": "docker-compose -f docker-compose.core.yml up"
   },
   "keywords": [
     "microservices",
@@ -21,14 +13,8 @@
   ],
   "author": "hmake98",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/hmake98/nestjs-microservices/issues"
-  },
-  "homepage": "https://github.com/hmake98/nestjs-microservices#readme",
   "devDependencies": {
-    "@nestjs/cli": "^8.2.1",
-    "cross-env": "^7.0.3",
-    "prettier": "^2.5.1"
+    "cross-env": "^7.0.3"
   },
   "dependencies": {
     "dotenv": "^16.0.0"

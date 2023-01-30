@@ -34,3 +34,22 @@ services:
       - name: notification-route
         paths:
           - /notification
+plugins:
+  - name: jwt
+    service: post-service
+    enabled: true
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+  - name: rate-limiting
+    config:
+      second: 5
+      hour: 10000
+      policy: local
+consumers:
+  - username: login_server_issuer
+    jwt_secrets:
+      - algorithm: HS256
+        key: MKWeR0nu9OAUR9HrjpUG82Hbfz7ZXsIw
+        secret: 6gkrxTKAraykMSpmnLNEGiEE3Yz8XL6U
