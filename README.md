@@ -16,7 +16,7 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
 
 ## Setting up an environment notes:
-- you can start local environment by running `docker-compose.test.yml` file. file only contains service dependencies so that you don't need to start each service seperatly on your own. but keep in mind that if you're running any of the service in local then you need to change `.env` and replace all docker host variables to `localhost`. otherwise it will throw an error. 
+- you can start local environment by running `docker-compose.core.yml` file. file only contains service dependencies so that you don't need to start each service seperatly on your own. but keep in mind that if you're running any of the service in local then you need to change `.env` and replace all docker host variables to `localhost`. otherwise services will not work for local machine. 
 - you can start all services together using `docker-compose up`. keep in mind that you will have to change environment variables to docker host variables as we're running all the services in docker and docker can't find local network in the container.
 - `kong.yml` file will be used for routing of services. after creating new service, define that service in `kong.yml` first.
 - The development server will start on port `8000`. 
@@ -58,8 +58,7 @@ Deploy services to dockerhub.
 sh deploy.sh
 ```
 Notes:
-- you can also use this script to deploy services to ECR. change `deploy.sh` script accordingly.
-- Use `.prod.env` file for deployment of the services. 
+- you can also use this script to deploy services to ECR. change `deploy.sh` script accordingly. 
 - you can follow deployment process as below
   - Docker compose context method (Cloud Formation with compose CLI). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
   - Use ECS CLI method. follow this (Blog)[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-fargate.html]
