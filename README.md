@@ -63,7 +63,7 @@ Notes:
   - Docker compose context method (Cloud Formation with compose CLI). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
   - Use ECS CLI method. follow this (Blog)[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-fargate.html]
 ## Docker Notes:
-- Use `hostname` of service to connect service internally in local docker environment.
+- Use `name` of the service to connect service internally with docker environment.
 - for rebuild services use command `docker-compose up --build`.  
 
 ## Blogs and References:
