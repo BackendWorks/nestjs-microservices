@@ -5,7 +5,7 @@
   "scripts": {
     "deploy": "sh deploy.sh",
     "core:down": "docker-compose -f docker-compose.core.yml down",
-    "core:up": "docker-compose -f docker-compose.core.yml up"
+    "core:up": "docker-compose -f docker-compose.core.yml up -d"
   },
   "keywords": [
     "microservices",
