@@ -63,16 +63,9 @@ Notes:
   - Docker compose context method (Cloud Formation with compose CLI). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
   - Use ECS CLI method. follow this (Blog)[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-fargate.html]
 ## Docker Notes:
-- Use `hostname` of service to connect service internally in local docker environment.
-- for rebuild all services use command `docker-compose up --build`.  
-- Use `docker-compose.prod.yml` for deployment if you're following `compose cli` deployment strategy.
+- Use `name` of the service to connect service internally with docker environment.
+- for rebuild services use command `docker-compose up --build`.  
 
 ## Blogs and References:
 - https://www.infracloud.io/blogs/logging-in-kubernetes-efk-vs-plg-stack/
 - https://faun.pub/setting-up-centralized-logging-environment-using-efk-stack-with-docker-compose-c96bb3bebf7
-
-
-
-
-
-
