@@ -5,32 +5,59 @@ services:
   - name: auth_service
     host: auth
     port: 9001
-    protocol: http
     routes:
       - name: auth_route
         paths:
-          - /auth
+          - "/auth"
         strip_path: true
+  - name: post_service
+    host: post
+    port: 9002
+    routes:
+      - name: post_route
+        paths:
+          - "/post"
+        strip_path: true
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
   - name: files_service
     host: files
     port: 9003
-    protocol: http
     routes:
       - name: files_route
         paths:
-          - /files
+          - "/files"
         strip_path: true
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
+  - name: notification_service
+    host: notification
+    port: 9003
+    routes:
+      - name: notification_route
+        paths:
+          - "/notification"
+        strip_path: true
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
 plugins:
   - name: rate-limiting
     config:
       second: 5
       hour: 10000
       policy: local
-  - name: jwt
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
 consumers:
   - username: admin
     jwt_secrets:

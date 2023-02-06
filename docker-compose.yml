@@ -8,19 +8,33 @@ services:
     ports:
       - "9001:9001"
     env_file:
-      - ./auth/.dev.env
+      - ./auth/.env.dev
     networks:
       - backend
     volumes:
       - ./auth:/app/auth
       - /app/auth/node_modules
+  post:
+    build:
+      context: ./post
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "9002:9002"
+    env_file:
+      - ./post/.env.dev
+    networks:
+      - backend
+    volumes:
+      - ./post:/app/post
+      - /app/post/node_modules
   mailer:
     build:
       context: ./mailer
       dockerfile: Dockerfile
     restart: on-failure
     env_file:
-      - ./mailer/.dev.env
+      - ./mailer/.env.dev
     networks:
       - backend
     volumes:
@@ -34,12 +48,26 @@ services:
     ports:
       - "9003:9003"
     env_file:
-      - ./files/.dev.env
+      - ./files/.env.dev
     networks:
       - backend
     volumes:
       - ./files:/app/files
       - /app/files/node_modules
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "9004:9004"
+    env_file:
+      - ./notification/.env.dev
+    networks:
+      - backend
+    volumes:
+      - ./notification:/app/notification
+      - /app/notification/node_modules
   kong:
     build:
       context: ./kong
@@ -58,6 +86,7 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_LOG_LEVEL: "debug"
     ports:
       - "8000:8000"
       - "8001:8001"
