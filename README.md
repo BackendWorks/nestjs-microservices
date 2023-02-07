@@ -10,46 +10,50 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - Kong - https://konghq.com/
 - Loki - https://grafana.com/oss/loki/
 - Fluent-Bit - https://fluentbit.io/
+
 ## Get started
 - use `git submodule update --init --recursive` command to update/fetch submodules.
 - copy env variables from each submodule repo from `example.env` file. 
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
 
 ## Setting up an environment notes:
-- you can start local environment by running `docker-compose.core.yml` file. file only contains service dependencies so that you don't need to start each service seperatly on your own. but keep in mind that if you're running any of the service in local then you need to change `.env` and replace all docker host variables to `localhost`. otherwise services will not work for local machine. 
-- you can start all services together using `docker-compose up`. keep in mind that you will have to change environment variables to docker host variables as we're running all the services in docker and docker can't find local network in the container.
-- `kong.yml` file will be used for routing of services. after creating new service, define that service in `kong.yml` first.
-- The development server will start on port `8000`. 
+- before starting `docker-compose up`, make sure that you have set up `.env` and `.env.dev` file.
+- use of `.env` file - to interact with the services using `localhost` by running `docker-compose.core.yml` services in docker. as we're interacting with them in localhost env.
+- use of `.env.dev` file - to use environment variables in `docker-compose.yml` file, while running all services together. as we're running those services in docker env.
+- `kong.yml` from `kong/conf` file will be used for routing for the services. add new services in `kong.yml` file.
+- authentication for each service is handled by kong api gateway itself. to assign authentication, attach jwt plugin in specific service. see kong.yml for example.
+- The development server endpoint will start on kong port `8000`. 
+
+## Run in local
+
+1. start core services (postgres, rabbitmq, mongodb, redis)
+```
+npm start core:up 
+```
+
+2. go to service folder `cd auth`, and to start in development mode
+```
+npm run dev
+```
+
+to stop core services, run script
+```
+npm run core:down
+```
+
+## Run in docker-compose 
+```
+docker-compose up 
+```
 
 ## Setup Grafana Dashboard
-To see the logs on Grafana dashboard, you can follow YouTube video or below steps.
+To see the logs on Grafana dashboard, follow below steps.
 1. Open the browser and go to http://localhost:3000, use default values admin and admin for username and password.
 2. Now, go to http://localhost:3000/datasources and select Loki from Logging and document databases section.
 3. Enter http://loki:3100 in URL under HTTP section. We can do this because we are running Loki and Grafana in the same network.
 4. loki else you have to enter host IP address and port here, click on Save and Test button from the bottom of the page.
 5. Now, go to 3rd tab Explore from the left sidebar or http://localhost:3000/explore
-
-## Run in local
-
-1. first start all deps from `docker-compose.test.yml`
-```
-docker-compose -f docker-compose.test.yml up 
-```
-
-2. to start any service in development mode
-```
-npm start
-```
-
-3. then you can access service endpoint directly using localhost.
-
-## Run in docker 
-
-1. build docker-compose images 
-```
-docker-compose up 
-```
-2. and then you can access services from kong api gateway on port `8000`. 
+![image](https://user-images.githubusercontent.com/23061515/217284063-5a548f77-ac0c-42b3-bfdb-963a62f8788a.png)
 
 ## Deployment
 
@@ -63,7 +67,7 @@ Notes:
   - Docker compose context method (Cloud Formation with compose CLI). follow this (Blog)[https://www.docker.com/blog/docker-compose-from-local-to-amazon-ecs/] 
   - Use ECS CLI method. follow this (Blog)[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-fargate.html]
 ## Docker Notes:
-- Use `name` of the service to connect service internally with docker environment.
+- Use `name` of the service to connect service internally with docker compose environment.
 - for rebuild services use command `docker-compose up --build`.  
 
 ## Blogs and References:
