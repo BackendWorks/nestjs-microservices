@@ -1,13 +1,13 @@
 #!/bin/sh
 for entry in */; do
-    if [ -e $entry/Dockerfile.prod ]; then
+    if [ -e $entry/Dockerfile ]; then
         cd $entry
         echo "********** Deploying ${entry%/} ************"
-        docker build -t nestjs-:${entry%/} -f Dockerfile.prod .
+        docker build -t nestjs-microservices-${entry%/}:latest -f Dockerfile .
         echo "********** Build completed ************"
-        docker tag nestjs-:${entry%/} 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-:${entry%/}
+        docker tag nestjs-microservices-${entry%/}:latest hmake98/nestjs-microservices-${entry%/}:latest
         echo "********** Build tagged ************"
-        docker push 339146391262.dkr.ecr.ap-south-1.amazonaws.com/nestjs-:${entry%/}
+        docker push hmake98/nestjs-microservices-${entry%/}:latest
         echo "********** Build pushed ************"
         cd ..
     fi
