@@ -14,6 +14,12 @@ services:
     volumes:
       - ./auth:/app/auth
       - /app/auth/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: auth-service
   post:
     build:
       context: ./post
@@ -28,6 +34,12 @@ services:
     volumes:
       - ./post:/app/post
       - /app/post/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: post-service
   mailer:
     build:
       context: ./mailer
@@ -40,6 +52,12 @@ services:
     volumes:
       - ./mailer:/app/mailer
       - /app/mailer/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: mailer-service
   files:
     build:
       context: ./files
@@ -54,6 +72,12 @@ services:
     volumes:
       - ./files:/app/files
       - /app/files/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: files-service
   notification:
     build:
       context: ./notification
@@ -68,6 +92,12 @@ services:
     volumes:
       - ./notification:/app/notification
       - /app/notification/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: notification-service
   kong:
     build:
       context: ./kong
@@ -92,6 +122,12 @@ services:
       - "8001:8001"
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: kong-service
   postgres:
     image: postgres:latest
     ports:
@@ -104,6 +140,12 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: postgres-service
   rabbitmq:
     image: rabbitmq:3-management
     volumes:
@@ -113,18 +155,71 @@ services:
       - "15672:15672"
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: rabbitmq-service
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
     networks:
       - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: redis-service
   mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - backend
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: mongodb-service
+  fluent-bit:
+    environment:
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    build:
+      context: ./fluent-bit
+      dockerfile: Dockerfile
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - backend
+  loki:
+    image: grafana/loki:latest
+    expose:
+      - "3100"
+    networks:
+      - backend
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+    networks:
+      - backend
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    expose:
+      - "8081"
+    environment:
+      ENABLE_METRICS: "true"
     networks:
       - backend
 networks:
