@@ -1,4 +1,4 @@
-# Nest Microservices with RabbitMQ (Basic Version)
+# Nest Microservices with RabbitMQ (Version 2)
 Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Redis Queues, Firebase Cloud Notifications.
 
 ## Dependencies & Services
