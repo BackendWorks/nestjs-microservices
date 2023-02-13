@@ -5,6 +5,7 @@ services:
   - name: auth_service
     host: auth
     port: 9001
+    protocol: http
     routes:
       - name: auth_route
         paths:
@@ -13,6 +14,7 @@ services:
   - name: post_service
     host: post
     port: 9002
+    protocol: http
     routes:
       - name: post_route
         paths:
@@ -27,6 +29,7 @@ services:
   - name: files_service
     host: files
     port: 9003
+    protocol: http
     routes:
       - name: files_route
         paths:
@@ -41,6 +44,7 @@ services:
   - name: notification_service
     host: notification
     port: 9003
+    protocol: http
     routes:
       - name: notification_route
         paths:
