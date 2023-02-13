@@ -1,7 +1,7 @@
 {
   "name": "nestjs-microservices",
   "version": "1.0.0",
-  "description": "Nestjs RabbitMQ Microservices Boilerplate",
+  "description": "Nestjs RabbitMQ Microservices",
   "scripts": {
     "deploy": "sh deploy.sh",
     "core:up": "docker-compose -f docker-compose.core.yml up -d",
@@ -12,11 +12,5 @@
     "nestjs"
   ],
   "author": "hmake98",
-  "license": "MIT",
-  "devDependencies": {
-    "cross-env": "^7.0.3"
-  },
-  "dependencies": {
-    "dotenv": "^16.0.0"
-  }
+  "license": "MIT"
 }
