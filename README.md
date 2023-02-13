@@ -1,5 +1,5 @@
 # Nest Microservices with RabbitMQ (Version 2)
-Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Redis Queues, Firebase Cloud Notifications.
+Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Bull Queues using Redis, Firebase Cloud Notifications, Grafana stack, Fluent-Bit, MongoDB, PostgreSQL, Prisma.
 
 ## Dependencies & Services
 - RabbitMQ - https://www.rabbitmq.com/
@@ -10,11 +10,13 @@ Fully managed microservices starter using NestJS, Kong API gateway, RabbitMQ, Re
 - Kong - https://konghq.com/
 - Loki - https://grafana.com/oss/loki/
 - Fluent-Bit - https://fluentbit.io/
+- Prisma - https://www.prisma.io/
 
 ## Get started
 - use `git submodule update --init --recursive` command to update/fetch submodules.
 - copy env variables from each submodule repo from `example.env` file. 
 - To explore APIs collection here is the link of [postman](https://www.getpostman.com/collections/d1dccb090ce55fe39f0a) collection
+- For CI/CD with AWS CodePipeline, use `buildspec.yml` file.  
 
 ## Setting up an environment notes:
 - before starting `docker-compose up`, make sure that you have set up `.env` and `.env.dev` file.
@@ -57,10 +59,11 @@ To see the logs on Grafana dashboard, follow below steps.
 
 ## Deployment
 
-Deploy services to dockerhub.
+Deploy service to ECR.
 ```
 sh deploy.sh
 ```
+
 Notes:
 - you can also use this script to deploy services to ECR. change `deploy.sh` script accordingly. 
 - you can follow deployment process as below
