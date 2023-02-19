@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.nameSpace }}"
+  labels:
+    app: "{{ .Chart.Name }}"
+    chart: "{{ .Chart.Name }}"
+    version: "{{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: "{{ .Chart.Name }}"
+      chart: "{{ .Chart.Name }}"
+      version: "{{ .Chart.Version }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Chart.Name }}"
+        chart: "{{ .Chart.Name }}"
+        version: "{{ .Chart.Version }}"
+    spec:
+      containers:
+        - name: "{{ .Values.name }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:          
+            {{- range .Values.env }}
+              - name: {{ .key }}
+                value: {{ .value | quote }}
+            {{- end}}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+              protocol: TCP
+      restartPolicy: {{ .Values.deployment.restartPolicy }}
