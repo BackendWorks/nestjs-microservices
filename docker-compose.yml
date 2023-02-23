@@ -8,7 +8,7 @@ services:
     ports:
       - "9001:9001"
     env_file:
-      - ./auth/.env.dev
+      - ./auth/.env.local
     networks:
       - backend
     volumes:
@@ -28,7 +28,7 @@ services:
     ports:
       - "9002:9002"
     env_file:
-      - ./post/.env.dev
+      - ./post/.env.local
     networks:
       - backend
     volumes:
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     restart: on-failure
     env_file:
-      - ./mailer/.env.dev
+      - ./mailer/.env.local
     networks:
       - backend
     volumes:
@@ -66,7 +66,7 @@ services:
     ports:
       - "9003:9003"
     env_file:
-      - ./files/.env.dev
+      - ./files/.env.local
     networks:
       - backend
     volumes:
@@ -86,7 +86,7 @@ services:
     ports:
       - "9004:9004"
     env_file:
-      - ./notification/.env.dev
+      - ./notification/.env.local
     networks:
       - backend
     volumes:
@@ -127,55 +127,42 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: postgres
   rabbitmq:
-    image: rabbitmq:3-management
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
+    image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=master123
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
     networks:
       - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: rabbitmq
   redis:
     image: redis:latest
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass master123
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
     networks:
       - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: redis
   mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: master123
     volumes:
       - mongo_data:/data/db
     networks:
       - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: mongodb
   fluent-bit:
     environment:
+      LOG_LEVEL: debug
       LOKI_URL: http://loki:3100/loki/api/v1/push
     build:
       context: ./fluent-bit
@@ -218,4 +205,6 @@ volumes:
   rabbit_data:
     driver: local
   mongo_data:
+    driver: local
+  redis_data:
     driver: local
