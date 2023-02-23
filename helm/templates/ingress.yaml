@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kong-gateway
+  annotations:
+    konghq.com/strip-path: "true"
+spec:
+  ingressClassName: kong
+  rules:
+    - http:
+        paths:
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 9001
+    - http:
+        paths:
+          - path: /post
+            pathType: Prefix
+            backend:
+              service:
+                name: post-service
+                port:
+                  number: 9002
+    - http:
+        paths:
+          - path: /files
+            pathType: Prefix
+            backend:
+              service:
+                name: files-service
+                port:
+                  number: 9003
+    - http:
+        paths:
+          - path: /notification
+            pathType: Prefix
+            backend:
+              service:
+                name: notification-service
+                port:
+                  number: 9004
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rl-by-ip
+config:
+  second: 5
+  limit_by: ip
+  policy: local
+plugin: rate-limiting

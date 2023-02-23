@@ -29,7 +29,7 @@ spec:
             {{- range .Values.env }}
               - name: {{ .key }}
                 value: {{ .value | quote }}
-            {{- end}}
+            {{- end }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
               protocol: TCP

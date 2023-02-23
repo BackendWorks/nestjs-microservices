@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 replicaCount: 1
-name: notification
+name: notification-service
 nameSpace: default
 image:
   repository: nestjs-microservices_notification
@@ -29,7 +29,6 @@ env:
     value: "6379"
   - key: REDIS_PASSWORD 
     value: master123
-  
 service:
   name: notification
   type: NodePort
