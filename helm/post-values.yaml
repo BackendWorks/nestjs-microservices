@@ -14,8 +14,17 @@ env:
   - key: PORT
     value: "9002"
   - key: NODE_ENV 
-    value: "development"
-    # Pass env variables here in a form of key, value
+    value: development
+  - key: RABBITMQ_URL
+    value: amqp://admin:master123@host.minikube.internal:5672
+  - key: RABBITMQ_AUTH_QUEUE
+    value: auth_queue
+  - key: RABBITMQ_MAILER_QUEUE
+    value: mailer_queue
+  - key: RABBITMQ_POST_QUEUE
+    value: post_queue
+  - key: DATABASE_URL
+    value: postgresql://admin:master123@host.minikube.internal:5432/post-db?schema=public    
 service:
   name: post
   type: NodePort

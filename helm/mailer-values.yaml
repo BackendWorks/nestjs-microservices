@@ -12,8 +12,27 @@ deployment:
   restartPolicy: Always
 env:
   - key: NODE_ENV 
-    value: "development"
-    # Pass env variables here in a form of key, value
+    value: development
+  - key: RABBITMQ_URL
+    value: amqp://admin:master123@host.minikube.internal:5672
+  - key: RABBITMQ_MAILER_QUEUE 
+    value: mailer_queue
+  - key: RABBITMQ_AUTH_QUEUE 
+    value: auth_queue
+  - key: REDIS_HOST
+    value: host.minikube.internal
+  - key: REDIS_PORT  
+    value: "6379"
+  - key: REDIS_PASSWORD 
+    value: master123
+  - key: AWS_ACCESS_KEY
+    value: ""
+  - key: AWS_SECRET_KEY
+    value: ""
+  - key: AWS_REGION
+    value: ""
+  - key: SOURCE_EMAIL
+    value: ""   
 service:
   name: mailer
   type: NodePort

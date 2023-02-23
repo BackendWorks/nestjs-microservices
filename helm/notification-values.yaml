@@ -14,8 +14,22 @@ env:
   - key: PORT
     value: "9004"
   - key: NODE_ENV 
-    value: "development"
-    # Pass env variables here in a form of key, value
+    value: development
+  - key: RABBITMQ_URL
+    value: amqp://admin:master123@host.minikube.internal:5672
+  - key: RABBITMQ_AUTH_QUEUE 
+    value: auth_queue
+  - key: RABBITMQ_NOTIFICATION_QUEUE 
+    value: notification_queue
+  - key: DATABASE_URL 
+    value: mongodb://host.minikube.internal:27017/notificaiton-db
+  - key: REDIS_HOST 
+    value: host.minikube.internal
+  - key: REDIS_PORT 
+    value: "6379"
+  - key: REDIS_PASSWORD 
+    value: master123
+  
 service:
   name: notification
   type: NodePort
