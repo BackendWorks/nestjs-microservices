@@ -1,0 +1,193 @@
+# Default values for nestjs-microservices.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+services:
+  - replicaCount: 1
+    name: auth
+    nameSpace: default
+    image:
+      repository: nestjs-microservices_auth
+      tag: latest
+      pullPolicy: Never
+    deployment:
+      restartPolicy: Always
+    env:
+      - key: NODE_ENV
+        value: development
+      - key: PORT
+        value: "9001"
+      - key: TOKEN_EXP
+        value: 86400s
+      - key: AUTH_SECRET
+        value: my_secret_key
+      - key: RABBITMQ_URL
+        value: amqp://admin:master123@host.minikube.internal:5672
+      - key: RABBITMQ_TOKEN_QUEUE
+        value: token_queue
+      - key: RABBITMQ_MAILER_QUEUE
+        value: mailer_queue
+      - key: RABBITMQ_FILES_QUEUE
+        value: files_queue
+      - key: RABBITMQ_AUTH_QUEUE
+        value: auth_queue
+      - key: RABBITMQ_NOTIFICATION_QUEUE
+        value: notification_queue
+      - key: DATABASE_URL
+        value: "postgresql://admin:master123@host.minikube.internal:5432/user-db?schema=public"
+    service:
+      name: auth-service
+      type: NodePort
+      externalPort: 9001
+      internalPort: 9001
+    resources:
+      {}
+      # We usually recommend not to specify default resources and to leave this as a conscious
+      # choice for the user. This also increases chances charts run on environments with little
+      # resources, such as Minikube. If you do want to specify resources, uncomment the following
+      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+      # limits:
+      #  cpu: 100m
+      #  memory: 128Mi
+      # requests:
+      #  cpu: 100m
+      #  memory: 128Mi
+  - replicaCount: 1
+    name: files
+    nameSpace: default
+    image:
+      repository: nestjs-microservices_files
+      tag: latest
+      pullPolicy: Never
+    deployment:
+      restartPolicy: Always
+    env:
+      - key: NODE_ENV
+        value: development
+      - key: PORT
+        value: "9003"
+      - key: RABBITMQ_URL
+        value: amqp://admin:master123@host.minikube.internal:5672
+      - key: RABBITMQ_FILES_QUEUE
+        value: files_queue
+      - key: RABBITMQ_AUTH_QUEUE
+        value: auth_queue
+      - key: DATABASE_URL
+        value: mongodb://host.minikube.internal:27017/files-db
+      - key: AWS_EXPIRE_LINK
+        value: ""
+      - key: AWS_ACCESS_KEY
+        value: ""
+      - key: AWS_SECRET_KEY
+        value: ""
+      - key: AWS_REGION
+        value: ""
+      - key: AWS_BUCKET
+        value: ""
+    service:
+      name: files-service
+      type: NodePort
+      externalPort: 9003
+      internalPort: 9003
+    resources: {}
+  - replicaCount: 1
+    name: mailer
+    nameSpace: default
+    image:
+      repository: nestjs-microservices_mailer
+      tag: latest
+      pullPolicy: Never
+    deployment:
+      restartPolicy: Always
+    env:
+      - key: NODE_ENV
+        value: development
+      - key: RABBITMQ_URL
+        value: amqp://admin:master123@host.minikube.internal:5672
+      - key: RABBITMQ_MAILER_QUEUE
+        value: mailer_queue
+      - key: RABBITMQ_AUTH_QUEUE
+        value: auth_queue
+      - key: REDIS_HOST
+        value: host.minikube.internal
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_PASSWORD
+        value: master123
+      - key: AWS_ACCESS_KEY
+        value: ""
+      - key: AWS_SECRET_KEY
+        value: ""
+      - key: AWS_REGION
+        value: ""
+      - key: SOURCE_EMAIL
+        value: ""
+    service:
+      name: mailer-service
+      type: NodePort
+      externalPort: 80
+      internalPort: 80
+    resources: {}
+  - replicaCount: 1
+    name: notification
+    nameSpace: default
+    image:
+      repository: nestjs-microservices_notification
+      tag: latest
+      pullPolicy: Never
+    deployment:
+      restartPolicy: Always
+    env:
+      - key: PORT
+        value: "9004"
+      - key: NODE_ENV
+        value: development
+      - key: RABBITMQ_URL
+        value: amqp://admin:master123@host.minikube.internal:5672
+      - key: RABBITMQ_AUTH_QUEUE
+        value: auth_queue
+      - key: RABBITMQ_NOTIFICATION_QUEUE
+        value: notification_queue
+      - key: DATABASE_URL
+        value: mongodb://host.minikube.internal:27017/notificaiton-db
+      - key: REDIS_HOST
+        value: host.minikube.internal
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_PASSWORD
+        value: master123
+    service:
+      name: notification-service
+      type: NodePort
+      externalPort: 9004
+      internalPort: 9004
+    resources: {}
+  - replicaCount: 1
+    name: post
+    nameSpace: default
+    image:
+      repository: nestjs-microservices_post
+      tag: latest
+      pullPolicy: Never
+    deployment:
+      restartPolicy: Always
+    env:
+      - key: PORT
+        value: "9002"
+      - key: NODE_ENV
+        value: development
+      - key: RABBITMQ_URL
+        value: amqp://admin:master123@host.minikube.internal:5672
+      - key: RABBITMQ_AUTH_QUEUE
+        value: auth_queue
+      - key: RABBITMQ_MAILER_QUEUE
+        value: mailer_queue
+      - key: RABBITMQ_POST_QUEUE
+        value: post_queue
+      - key: DATABASE_URL
+        value: postgresql://admin:master123@host.minikube.internal:5432/post-db?schema=public
+    service:
+      name: post-service
+      type: NodePort
+      externalPort: 9002
+      internalPort: 9002
+    resources: {}

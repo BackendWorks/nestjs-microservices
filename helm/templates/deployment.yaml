@@ -1,36 +1,40 @@
+{{- $dot := . }}
+{{- range $value := .Values.services }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.name }}"
-  namespace: "{{ .Values.nameSpace }}"
+  name: "{{ $value.name }}"
+  namespace: "{{ $value.nameSpace }}"
   labels:
-    app: "{{ .Chart.Name }}"
-    chart: "{{ .Chart.Name }}"
-    version: "{{ .Chart.Version }}"
+    app: "{{ $value.name }}"
+    chart: "{{ $dot.Chart.Name }}"
+    version: "{{ $dot.Chart.Version }}"
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ $value.replicaCount }}
   selector:
     matchLabels:
-      app: "{{ .Chart.Name }}"
-      chart: "{{ .Chart.Name }}"
-      version: "{{ .Chart.Version }}"
+      app: "{{ $value.name }}"
+      chart: "{{ $dot.Chart.Name }}"
+      version: "{{ $dot.Chart.Version }}"
   template:
     metadata:
       labels:
-        app: "{{ .Chart.Name }}"
-        chart: "{{ .Chart.Name }}"
-        version: "{{ .Chart.Version }}"
+        app: "{{ $value.name }}"
+        chart: "{{ $dot.Chart.Name }}"
+        version: "{{ $dot.Chart.Version }}"
     spec:
       containers:
-        - name: "{{ .Values.name }}"
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: "{{ $value.name }}"
+          image: "{{ $value.image.repository }}:{{ $value.image.tag }}"
+          imagePullPolicy: {{ $value.image.pullPolicy }}
           env:          
-            {{- range .Values.env }}
+            {{- range $value.env }}
               - name: {{ .key }}
                 value: {{ .value | quote }}
             {{- end }}
           ports:
-            - containerPort: {{ .Values.service.internalPort }}
+            - containerPort: {{ $value.service.internalPort }}
               protocol: TCP
-      restartPolicy: {{ .Values.deployment.restartPolicy }}
+      restartPolicy: {{ $value.deployment.restartPolicy }}
+{{- end }}

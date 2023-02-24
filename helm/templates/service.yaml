@@ -1,20 +1,25 @@
+{{- $dot := . }}
+{{- range $value := .Values.services }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Values.service.name }}"
-  namespace: "{{ .Values.nameSpace }}"
+  name: "{{ $value.service.name }}"
+  namespace: "{{ $value.nameSpace }}"
   labels:
-    app: "{{ .Chart.Name }}"
-    chart: "{{ .Chart.Name }}"
-    version: "{{ .Chart.Version }}"
+    app: "{{ $value.name }}"
+    chart: "{{ $dot.Chart.Name }}"
+    version: "{{ $dot.Chart.Version }}"
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ $value.service.type }}
   ports:
-  - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
+  - port: {{ $value.service.externalPort }}
+    targetPort: {{ $value.service.internalPort }}
     protocol: TCP
-    name: {{ .Values.service.name }}
+    name: {{ $value.service.name }}
   selector:
-    app: "{{ .Chart.Name }}"
-    chart: "{{ .Chart.Name }}"
-    version: "{{ .Chart.Version }}"
+    app: "{{ $value.name }}"
+    chart: "{{ $dot.Chart.Name }}"
+    version: "{{ $dot.Chart.Version }}"
+{{- end }}
+
