@@ -1,55 +1,38 @@
+{{- if .Values.kong.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: kong-gateway
-  annotations:
-    konghq.com/strip-path: "true"
+    name: nestjs-gateway
+    namespace: {{ .Release.Namespace }}
+    labels:
+        app.kubernetes.io/component: server
+        chart: "{{ .Chart.Name }}"
+        version: "{{ .Chart.Version }}"
 spec:
-  ingressClassName: kong
-  rules:
+    ingressClassName: {{ .Values.kong.ingressController.ingressClass }}
+    rules:
+    {{- range $value := .Values.kong.paths }}
     - http:
         paths:
-          - path: /auth
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-service
-                port:
-                  number: 9001
-    - http:
-        paths:
-          - path: /post
-            pathType: Prefix
-            backend:
-              service:
-                name: post-service
-                port:
-                  number: 9002
-    - http:
-        paths:
-          - path: /files
-            pathType: Prefix
-            backend:
-              service:
-                name: files-service
-                port:
-                  number: 9003
-    - http:
-        paths:
-          - path: /notification
-            pathType: Prefix
-            backend:
-              service:
-                name: notification-service
-                port:
-                  number: 9004
+        - path: {{ $value.path }}
+          pathType: {{ $value.pathType }}
+          backend:
+            service: 
+              name: {{ $value.name }}
+              port:
+                number: {{ $value.port }}
+    {{- end }}
 ---
 apiVersion: configuration.konghq.com/v1
-kind: KongPlugin
+kind: KongClusterPlugin
 metadata:
-  name: rl-by-ip
-config:
-  second: 5
-  limit_by: ip
+  name: global-rate-limiting
+  annotations:
+    kubernetes.io/ingress.class: kong
+  labels:
+    global: "true"
+config: 
+  minute: 5
   policy: local
 plugin: rate-limiting
+{{- end }}

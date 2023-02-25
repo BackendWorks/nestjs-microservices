@@ -1,0 +1,9 @@
+dependencies:
+- name: grafana
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.2.27
+- name: kong
+  repository: https://charts.konghq.com
+  version: 2.16.5
+digest: sha256:5f4f4b1ce43ef5bdd3dd51100b394f70939ea5d0c67f608fc599b4ef8d51f9e1
+generated: "2023-02-25T15:24:25.470789048+05:30"
