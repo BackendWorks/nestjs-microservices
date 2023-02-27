@@ -69,6 +69,8 @@ Notes:
 
 To start with helm deployment, make sure that you have started Minikube on your local machine.
 
+NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of cluster.
+
 ```bash
 minikube start
 ```
@@ -76,13 +78,61 @@ Also, make sure that core services are running on docker containers, as we're us
 
 Now, install helm charts
 ```bash
-helm install nestjs-microservices helm 
+helm install nestjs-ms helm 
 ```
 To get services endpoints
 ```bash
 minikube service list
 ```
+Install fluent-bit, loki stack 
+```bash
+# install grafana repo
+helm repo add grafana https://grafana.github.io/helm-charts
+
+# install loki stack chart with fluent-bit
+helm upgrade --install loki-stack grafana/loki-stack \
+    --set fluent-bit.enabled=true,promtail.enabled=false \
+    --namespace=default
+
+# check loki stack installed in current namespace
+helm list
+# NAME     	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART           	APP VERSION
+# loki     	default  	1       	2023-02-27 19:10:51.925923794 +0530 IST	deployed	loki-stack-2.9.9	v2.6.1     
+# nestjs-ms	default  	1       	2023-02-27 19:11:14.537649934 +0530 IST	deployed	nestjs-ms-0.1.0 	1.0.0  
+
+# now get loki IP from k8s cluster
+kubectl get service loki
+# NAME   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+# loki   ClusterIP   10.107.243.160   <none>        3100/TCP   10m
+# use this ClusterIP to add datasource Loki in grafana dashboard
+
+
+# at the end minikube service list will look like this
+# |----------------------|-----------------------------------|--------------------|---------------------------|
+# |      NAMESPACE       |               NAME                |    TARGET PORT     |            URL            |
+# |----------------------|-----------------------------------|--------------------|---------------------------|
+# | default              | auth-service                      | No node port       |
+# | default              | files-service                     | No node port       |
+# | default              | kubernetes                        | No node port       |
+# | default              | loki                              | No node port       |
+# | default              | loki-headless                     | No node port       |
+# | default              | loki-memberlist                   | No node port       |
+# | default              | nestjs-ms-grafana                 | service/80         | http://192.168.49.2:30353 |
+# | default              | nestjs-ms-kong-proxy              | kong-proxy/80      | http://192.168.49.2:31208 |
+# |                      |                                   | kong-proxy-tls/443 | http://192.168.49.2:31070 |
+# | default              | nestjs-ms-kong-validation-webhook | No node port       |
+# | default              | notification-service              | No node port       |
+# | default              | post-service                      | No node port       |
+# | kube-system          | kube-dns                          | No node port       |
+# | kube-system          | metrics-server                    | No node port       |
+# | kubernetes-dashboard | dashboard-metrics-scraper         | No node port       |
+# | kubernetes-dashboard | kubernetes-dashboard              | No node port       |
+# |----------------------|-----------------------------------|--------------------|---------------------------|
+# To access grafana : http://192.168.49.2:30353
+# To access kong gateway: http://192.168.49.2:31208
+```
 Clean up
 ```bash
-helm uninstall nestjs-microservices
+helm uninstall nestjs-ms
+helm uninstall loki
 ```

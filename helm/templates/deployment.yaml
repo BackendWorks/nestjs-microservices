@@ -7,16 +7,15 @@ metadata:
   name: "{{ $value.name }}"
   namespace: "{{ $value.nameSpace }}"
   labels:
-    app: "{{ $value.name }}"
     chart: "{{ $dot.Chart.Name }}"
     version: "{{ $dot.Chart.Version }}"
 spec:
-  replicas: {{ $value.replicaCount }}
   selector:
     matchLabels:
       app: "{{ $value.name }}"
       chart: "{{ $dot.Chart.Name }}"
       version: "{{ $dot.Chart.Version }}"
+  replicas: {{ $value.replicaCount }}
   template:
     metadata:
       labels:
@@ -33,8 +32,9 @@ spec:
               - name: {{ .key }}
                 value: {{ .value | quote }}
             {{- end }}
+            {{- if $value.service }}
           ports:
             - containerPort: {{ $value.service.internalPort }}
-              protocol: TCP
+            {{- end }}
       restartPolicy: {{ $value.deployment.restartPolicy }}
 {{- end }}

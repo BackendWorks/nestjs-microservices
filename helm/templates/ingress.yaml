@@ -1,27 +1,27 @@
-{{- if .Values.kong.enabled -}}
+{{- if .Values.kong.ingressController.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-    name: nestjs-gateway
-    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.kong.name }}
+    annotations:
+      kubernetes.io/ingress.class: {{ .Values.kong.ingressController.ingressClass }}
+      konghq.com/strip-path: 'true'
     labels:
-        app.kubernetes.io/component: server
-        chart: "{{ .Chart.Name }}"
-        version: "{{ .Chart.Version }}"
+      chart: "{{ .Chart.Name }}"
+      version: "{{ .Chart.Version }}"
 spec:
-    ingressClassName: {{ .Values.kong.ingressController.ingressClass }}
-    rules:
-    {{- range $value := .Values.kong.paths }}
-    - http:
-        paths:
-        - path: {{ $value.path }}
-          pathType: {{ $value.pathType }}
-          backend:
-            service: 
-              name: {{ $value.name }}
-              port:
-                number: {{ $value.port }}
-    {{- end }}
+  rules:
+  {{- range $value := .Values.kong.paths }}
+  - http:
+      paths:
+      - path: {{ $value.path }}
+        pathType: {{ $value.pathType }}
+        backend:
+          service: 
+            name: {{ $value.name }}
+            port: 
+              number: {{ $value.port }}
+  {{- end }}
 ---
 apiVersion: configuration.konghq.com/v1
 kind: KongClusterPlugin

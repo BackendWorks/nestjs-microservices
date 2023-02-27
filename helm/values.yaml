@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 kong:
-  enabled: true
+  name: nestjs-microservices-ingress
   env:
     database: "off"
   ingressController:
@@ -12,19 +12,19 @@ kong:
     tls:
       parameters: []
   paths:
-    - path: "/auth"
+    - path: /auth
       pathType: Prefix
       name: auth-service
       port: 9001
-    - path: "/post"
+    - path: /post
       pathType: Prefix
       name: post-service
       port: 9002
-    - path: "/files"
+    - path: /files
       pathType: Prefix
       name: files-service
       port: 9003
-    - path: "/notification"
+    - path: /notification
       pathType: Prefix
       name: notification-service
       port: 9004
@@ -64,7 +64,7 @@ services:
         value: "postgresql://admin:master123@host.minikube.internal:5432/user-db?schema=public"
     service:
       name: auth-service
-      type: NodePort
+      type: ClusterIP
       externalPort: 9001
       internalPort: 9001
     resources:
@@ -113,7 +113,7 @@ services:
         value: ""
     service:
       name: files-service
-      type: NodePort
+      type: ClusterIP
       externalPort: 9003
       internalPort: 9003
     resources: {}
@@ -150,11 +150,6 @@ services:
         value: ""
       - key: SOURCE_EMAIL
         value: ""
-    service:
-      name: mailer-service
-      type: NodePort
-      externalPort: 80
-      internalPort: 80
     resources: {}
   - replicaCount: 1
     name: notification
@@ -186,7 +181,7 @@ services:
         value: master123
     service:
       name: notification-service
-      type: NodePort
+      type: ClusterIP
       externalPort: 9004
       internalPort: 9004
     resources: {}
@@ -216,7 +211,20 @@ services:
         value: postgresql://admin:master123@host.minikube.internal:5432/post-db?schema=public
     service:
       name: post-service
-      type: NodePort
+      type: ClusterIP
       externalPort: 9002
       internalPort: 9002
     resources: {}
+
+grafana:
+  persistence:
+    enabled: true
+    size: 5Gi
+  service:
+    enabled: true
+    type: NodePort
+    port: 80
+    targetPort: 3000
+  adminUser: admin
+  adminPassword: master123
+

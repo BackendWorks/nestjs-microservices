@@ -1,5 +1,5 @@
 apiVersion: v2
-name: nestjs-microservices
+name: nestjs-ms
 description: A Helm chart for nestjs-microservices
 
 # A chart can be either an 'application' or a 'library' chart.
@@ -24,9 +24,9 @@ version: 0.1.0
 appVersion: "1.0.0"
 
 dependencies:
-  - name: grafana
-    version: 8.2.27
-    repository: https://charts.bitnami.com/bitnami
   - name: kong
-    version: 2.16.5
+    version: 2.x.x
     repository: https://charts.konghq.com
+  - name: grafana
+    version: 6.x.x
+    repository: https://grafana.github.io/helm-charts

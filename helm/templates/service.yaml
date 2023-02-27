@@ -1,5 +1,6 @@
 {{- $dot := . }}
-{{- range $value := .Values.services }}
+{{- range $value := .Values.services | default dict }}
+{{- if $value.service }}
 ---
 apiVersion: v1
 kind: Service
@@ -16,10 +17,11 @@ spec:
   - port: {{ $value.service.externalPort }}
     targetPort: {{ $value.service.internalPort }}
     protocol: TCP
-    name: {{ $value.service.name }}
   selector:
     app: "{{ $value.name }}"
     chart: "{{ $dot.Chart.Name }}"
     version: "{{ $dot.Chart.Version }}"
 {{- end }}
+{{- end }}
+
 
