@@ -14,12 +14,14 @@ Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created wi
 - Firebase - https://firebase.google.com
 - Fluent-Bit - https://grafana.com/docs/loki/latest/clients/fluentbit
 
-## Get started
-- use `git submodule update --init --recursive` command to update/fetch submodules.
-- use `.env.local` file while working on local environment. 
-- use `buildspec.yml` file for AWS codepipeline. 
-- `kong.yml` from `kong/conf` file is configured for api gateway. add new services in `kong.yml` file.
+## Get started Notes:
+- Use `git submodule update --init --recursive` command to update/fetch submodules.
+- Use `.env.local` file while working on local environment and use `.env` for production.
+- Make sure to change **service name** to **localhost** in `.env.local` while running single service only in terminal.  
+- `kong.yml` from `kong/conf/kong.yml` file is configured for api gateway.
 - Kong development server endpoint will start on port `8000`. 
+- Health endpoint: `host:port/api/health`
+- Swagger docs endpoint: `host:port/api/docs`
 
 ## Run in local
 
