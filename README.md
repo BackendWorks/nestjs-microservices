@@ -1,5 +1,5 @@
 # NestJS Microservices with RabbitMQ / Grafana / Helm Charts
-Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created with SQL, NoSQL databases, BullMQ implementation, Kong API Gateway, Grafana Logging stack and Helm charts.
+Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created with SQL, NoSQL databases, Kong API Gateway, Grafana Logging stack and Helm charts.
 
 ## Dependencies & Services
 - RabbitMQ - https://www.rabbitmq.com
