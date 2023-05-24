@@ -27,7 +27,7 @@ Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created wi
 
 start core services (postgres, rabbitmq, mongodb, redis)
 ```bash
-npm start up 
+npm run up 
 ```
 
 Now, go to service folder `cd auth`
