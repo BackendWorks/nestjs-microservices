@@ -92,7 +92,7 @@ Install fluent-bit, loki stack
 helm repo add grafana https://grafana.github.io/helm-charts
 
 # install loki stack chart with fluent-bit
-helm upgrade --install loki-stack grafana/loki-stack \
+helm upgrade --install loki grafana/loki-stack \
     --set fluent-bit.enabled=true,promtail.enabled=false \
     --namespace=default
 
