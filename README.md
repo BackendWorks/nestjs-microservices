@@ -69,15 +69,13 @@ Notes:
 
 ## K8s Deployment with Helm charts:
 
-To start with helm deployment, make sure that you have started Minikube on your local machine.
+To start with helm deployment in local machine, make sure that you have started Minikube and Service images should be available in local docker env.
 
-NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of cluster.
+NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of a cluster.
 
 ```bash
 minikube start
 ```
-Also, make sure that core services are running on docker containers, as we're using core services as a dependency in helm charts.
-
 Now, install helm charts
 ```bash
 helm install nestjs-ms helm 
@@ -133,7 +131,7 @@ kubectl get service loki
 # To access grafana : http://192.168.49.2:30353
 # To access kong gateway: http://192.168.49.2:31208
 ```
-Clean up
+Clean up the local env
 ```bash
 helm uninstall nestjs-ms
 helm uninstall loki
