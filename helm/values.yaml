@@ -226,5 +226,5 @@ grafana:
     port: 80
     targetPort: 3000
   adminUser: admin
-  adminPassword: master123
+  adminPassword: admin
 
