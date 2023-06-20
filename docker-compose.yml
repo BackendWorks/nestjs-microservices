@@ -3,7 +3,7 @@ services:
   auth:
     build:
       context: ./auth
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: on-failure
     ports:
       - "9001:9001"
@@ -23,7 +23,7 @@ services:
   post:
     build:
       context: ./post
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: on-failure
     ports:
       - "9002:9002"
@@ -43,7 +43,7 @@ services:
   mailer:
     build:
       context: ./mailer
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: on-failure
     env_file:
       - ./mailer/.env.local
@@ -61,7 +61,7 @@ services:
   files:
     build:
       context: ./files
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: on-failure
     ports:
       - "9003:9003"
@@ -81,7 +81,7 @@ services:
   notification:
     build:
       context: ./notification
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: on-failure
     ports:
       - "9004:9004"

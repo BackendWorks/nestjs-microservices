@@ -25,22 +25,40 @@ Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created wi
 
 ## Run in local
 
-start core services (postgres, rabbitmq, mongodb, redis)
+start core services first (postgres, rabbitmq, mongodb, redis)
 ```bash
 npm run up 
 ```
 
-Now, go to service folder `cd auth`
+Now, first place `.env` file in service folder
+then go to service folder `cd auth`
 ```bash
 npm run dev
 ```
 
-to stop core services, run 
+to stop core services, run
 ```bash
 npm run down
 ```
 
-## Run Local Env in docker-compose 
+## Run in local with docker-compose
+
+start core services
+```bash
+npm run up
+```
+
+docker-compose command - this will take env variables from .env.local 
+```bash
+docker-compose up "service name" 
+```
+
+rebuild
+```bash
+docker-compose up "service name" --build
+```
+
+#### Run all services in Local Env using docker-compose 
 ```bash
 docker-compose up 
 ```
