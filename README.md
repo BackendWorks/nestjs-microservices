@@ -87,9 +87,7 @@ Notes:
 
 ## K8s Deployment with Helm charts:
 
-To start with helm deployment in local machine, make sure that you have started Minikube and Service images should be available in local docker env.
-
-NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of a cluster.
+NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of a cluster. To start with helm deployment in local machine, make sure that you have started Minikube. service images should be available in your local docker env and core service should be up and running in local env.
 
 ```bash
 minikube start

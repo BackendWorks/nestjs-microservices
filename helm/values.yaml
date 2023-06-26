@@ -217,9 +217,6 @@ services:
     resources: {}
 
 grafana:
-  persistence:
-    enabled: true
-    size: 5Gi
   service:
     enabled: true
     type: NodePort
@@ -228,3 +225,30 @@ grafana:
   adminUser: admin
   adminPassword: admin
 
+# Disable promtail
+promtail:
+  enabled: false
+
+# Enable Loki
+loki:
+  isDefault: true
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+  datasource:
+    jsonData: "{}"
+    uid: ""
+  persistence:
+    enabled: true
+    size: 5Gi
+
+# Enable Fluent Bit
+fluent-bit:
+  enabled: true
