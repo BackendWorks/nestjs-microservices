@@ -104,8 +104,6 @@ minikube service list
 ```
 Install fluent-bit, loki stack 
 ```bash
-# install grafana repo
-helm repo add grafana https://grafana.github.io/helm-charts
 
 # install loki stack chart with fluent-bit
 helm upgrade --install loki grafana/loki-stack \
