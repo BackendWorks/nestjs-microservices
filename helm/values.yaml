@@ -16,18 +16,53 @@ kong:
       pathType: Prefix
       name: auth-service
       port: 9001
-    - path: /post
-      pathType: Prefix
-      name: post-service
-      port: 9002
-    - path: /files
-      pathType: Prefix
-      name: files-service
-      port: 9003
-    - path: /notification
-      pathType: Prefix
-      name: notification-service
-      port: 9004
+    # - path: /post
+    #   pathType: Prefix
+    #   name: post-service
+    #   port: 9002
+    # - path: /files
+    #   pathType: Prefix
+    #   name: files-service
+    #   port: 9003
+    # - path: /notification
+    #   pathType: Prefix
+    #   name: notification-service
+    #   port: 9004
+
+grafana:
+  enabled: true
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 3000
+  adminUser: admin
+  adminPassword: admin
+
+promtail:
+  enabled: false
+
+loki:
+  enabled: true
+  isDefault: true
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+  datasource:
+    jsonData: "{}"
+    uid: ""
+  persistence:
+    enabled: true
+    size: 5Gi
+
+fluent-bit:
+  enabled: true
 
 services:
   - replicaCount: 1
@@ -36,7 +71,7 @@ services:
     image:
       repository: nestjs-microservices_auth
       tag: latest
-      pullPolicy: Never
+      pullPolicy: IfNotPresent
     deployment:
       restartPolicy: Always
     env:
@@ -79,119 +114,119 @@ services:
       # requests:
       #  cpu: 100m
       #  memory: 128Mi
-  - replicaCount: 1
-    name: files
-    nameSpace: default
-    image:
-      repository: nestjs-microservices_files
-      tag: latest
-      pullPolicy: Never
-    deployment:
-      restartPolicy: Always
-    env:
-      - key: NODE_ENV
-        value: development
-      - key: PORT
-        value: "9003"
-      - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_FILES_QUEUE
-        value: files_queue
-      - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: DATABASE_URL
-        value: mongodb://host.minikube.internal:27017/files-db
-      - key: AWS_EXPIRE_LINK
-        value: ""
-      - key: AWS_ACCESS_KEY
-        value: ""
-      - key: AWS_SECRET_KEY
-        value: ""
-      - key: AWS_REGION
-        value: ""
-      - key: AWS_BUCKET
-        value: ""
-    service:
-      name: files-service
-      type: ClusterIP
-      externalPort: 9003
-      internalPort: 9003
-    resources: {}
-  - replicaCount: 1
-    name: mailer
-    pathEnabled: false
-    nameSpace: default
-    image:
-      repository: nestjs-microservices_mailer
-      tag: latest
-      pullPolicy: Never
-    deployment:
-      restartPolicy: Always
-    env:
-      - key: NODE_ENV
-        value: development
-      - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_MAILER_QUEUE
-        value: mailer_queue
-      - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: REDIS_HOST
-        value: host.minikube.internal
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_PASSWORD
-        value: master123
-      - key: AWS_ACCESS_KEY
-        value: ""
-      - key: AWS_SECRET_KEY
-        value: ""
-      - key: AWS_REGION
-        value: ""
-      - key: SOURCE_EMAIL
-        value: ""
-    resources: {}
-  - replicaCount: 1
-    name: notification
-    nameSpace: default
-    image:
-      repository: nestjs-microservices_notification
-      tag: latest
-      pullPolicy: Never
-    deployment:
-      restartPolicy: Always
-    env:
-      - key: PORT
-        value: "9004"
-      - key: NODE_ENV
-        value: development
-      - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: notification_queue
-      - key: DATABASE_URL
-        value: mongodb://host.minikube.internal:27017/notificaiton-db
-      - key: REDIS_HOST
-        value: host.minikube.internal
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_PASSWORD
-        value: master123
-    service:
-      name: notification-service
-      type: ClusterIP
-      externalPort: 9004
-      internalPort: 9004
-    resources: {}
-  - replicaCount: 1
+  # - replicaCount: 1
+  #   name: files
+  #   nameSpace: default
+  #   image:
+  #     repository: nestjs-microservices_files
+  #     tag: latest
+  #     pullPolicy: IfNotPresent
+  #   deployment:
+  #     restartPolicy: Always
+  #   env:
+  #     - key: NODE_ENV
+  #       value: development
+  #     - key: PORT
+  #       value: "9003"
+  #     - key: RABBITMQ_URL
+  #       value: amqp://admin:master123@host.minikube.internal:5672
+  #     - key: RABBITMQ_FILES_QUEUE
+  #       value: files_queue
+  #     - key: RABBITMQ_AUTH_QUEUE
+  #       value: auth_queue
+  #     - key: DATABASE_URL
+  #       value: mongodb://host.minikube.internal:27017/files-db
+  #     - key: AWS_EXPIRE_LINK
+  #       value: ""
+  #     - key: AWS_ACCESS_KEY
+  #       value: ""
+  #     - key: AWS_SECRET_KEY
+  #       value: ""
+  #     - key: AWS_REGION
+  #       value: ""
+  #     - key: AWS_BUCKET
+  #       value: ""
+  #   service:
+  #     name: files-service
+  #     type: ClusterIP
+  #     externalPort: 9003
+  #     internalPort: 9003
+  #   resources: {}
+  # - replicaCount: 1
+  #   name: mailer
+  #   pathEnabled: false
+  #   nameSpace: default
+  #   image:
+  #     repository: nestjs-microservices_mailer
+  #     tag: latest
+  #     pullPolicy: IfNotPresent
+  #   deployment:
+  #     restartPolicy: Always
+  #   env:
+  #     - key: NODE_ENV
+  #       value: development
+  #     - key: RABBITMQ_URL
+  #       value: amqp://admin:master123@host.minikube.internal:5672
+  #     - key: RABBITMQ_MAILER_QUEUE
+  #       value: mailer_queue
+  #     - key: RABBITMQ_AUTH_QUEUE
+  #       value: auth_queue
+  #     - key: REDIS_HOST
+  #       value: host.minikube.internal
+  #     - key: REDIS_PORT
+  #       value: "6379"
+  #     - key: REDIS_PASSWORD
+  #       value: master123
+  #     - key: AWS_ACCESS_KEY
+  #       value: ""
+  #     - key: AWS_SECRET_KEY
+  #       value: ""
+  #     - key: AWS_REGION
+  #       value: ""
+  #     - key: SOURCE_EMAIL
+  #       value: ""
+  #   resources: {}
+  # - replicaCount: 1
+  #   name: notification
+  #   nameSpace: default
+  #   image:
+  #     repository: nestjs-microservices_notification
+  #     tag: latest
+  #     pullPolicy: IfNotPresent
+  #   deployment:
+  #     restartPolicy: Always
+  #   env:
+  #     - key: PORT
+  #       value: "9004"
+  #     - key: NODE_ENV
+  #       value: development
+  #     - key: RABBITMQ_URL
+  #       value: amqp://admin:master123@host.minikube.internal:5672
+  #     - key: RABBITMQ_AUTH_QUEUE
+  #       value: auth_queue
+  #     - key: RABBITMQ_NOTIFICATION_QUEUE
+  #       value: notification_queue
+  #     - key: DATABASE_URL
+  #       value: mongodb://host.minikube.internal:27017/notificaiton-db
+  #     - key: REDIS_HOST
+  #       value: host.minikube.internal
+  #     - key: REDIS_PORT
+  #       value: "6379"
+  #     - key: REDIS_PASSWORD
+  #       value: master123
+  #   service:
+  #     name: notification-service
+  #     type: ClusterIP
+  #     externalPort: 9004
+  #     internalPort: 9004
+  #   resources: {}
+  # - replicaCount: 1
     name: post
     nameSpace: default
     image:
       repository: nestjs-microservices_post
       tag: latest
-      pullPolicy: Never
+      pullPolicy: IfNotPresent
     deployment:
       restartPolicy: Always
     env:
@@ -215,40 +250,3 @@ services:
       externalPort: 9002
       internalPort: 9002
     resources: {}
-
-grafana:
-  service:
-    enabled: true
-    type: NodePort
-    port: 80
-    targetPort: 3000
-  adminUser: admin
-  adminPassword: admin
-
-# Disable promtail
-promtail:
-  enabled: false
-
-# Enable Loki
-loki:
-  isDefault: true
-  readinessProbe:
-    httpGet:
-      path: /ready
-      port: http-metrics
-    initialDelaySeconds: 45
-  livenessProbe:
-    httpGet:
-      path: /ready
-      port: http-metrics
-    initialDelaySeconds: 45
-  datasource:
-    jsonData: "{}"
-    uid: ""
-  persistence:
-    enabled: true
-    size: 5Gi
-
-# Enable Fluent Bit
-fluent-bit:
-  enabled: true
