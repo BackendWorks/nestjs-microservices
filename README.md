@@ -62,9 +62,6 @@ docker-compose up "service name" --build
 ```bash
 docker-compose up 
 ```
-## Docker Notes:
-- Use `name` of the service to connect service internally with docker compose environment.
-- for rebuild services use command `docker-compose up --build`.  
 
 ## Setup Grafana Dashboard in Local Env
 To see the logs on Grafana dashboard, follow below steps.
@@ -85,9 +82,17 @@ sh deploy.sh
 Notes:
 - change "aws_region" and "aws_account_id" as per your AWS account.
 
+## Build in Local
+
+```bash
+sh build.sh
+```
+
 ## K8s Deployment with Helm charts:
 
 NOTE: I would recommend tool [k9s](https://k9scli.io/) for better understanding of a cluster. To start with helm deployment in local machine, make sure that you have started Minikube. service images should be available in your local docker env and core service should be up and running in local env.
+
+If you're unable to use local images in minikube cluster then refer this [blog](https://medium.com/bb-tutorials-and-thoughts/how-to-use-own-local-doker-images-with-minikube-2c1ed0b0968) 
 
 ```bash
 minikube start
@@ -100,14 +105,7 @@ To get services endpoints
 ```bash
 minikube service list
 ```
-Install fluent-bit, loki stack 
 ```bash
-
-# install loki stack chart with fluent-bit
-helm upgrade --install loki grafana/loki-stack \
-    --set fluent-bit.enabled=true,promtail.enabled=false \
-    --namespace=default
-
 # check loki stack installed in current namespace
 helm list
 # NAME     	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART           	APP VERSION
@@ -118,8 +116,8 @@ helm list
 kubectl get service loki
 # NAME   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 # loki   ClusterIP   10.107.243.160   <none>        3100/TCP   10m
-# use this ClusterIP to add datasource Loki in grafana dashboard
 
+# use this ClusterIP to add datasource Loki in grafana dashboard
 
 # at the end minikube service list will look like this
 # |----------------------|-----------------------------------|--------------------|---------------------------|
