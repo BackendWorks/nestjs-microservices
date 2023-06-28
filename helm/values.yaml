@@ -29,40 +29,26 @@ kong:
       name: notification-service
       port: 9004
 
-grafana:
-  enabled: true
-  service:
-    type: NodePort
-    port: 80
-    targetPort: 3000
-  adminUser: admin
-  adminPassword: admin
-
-promtail:
-  enabled: false
-
-loki:
+loki-stack:
   enabled: true
   isDefault: true
-  readinessProbe:
-    httpGet:
-      path: /ready
-      port: http-metrics
-    initialDelaySeconds: 45
-  livenessProbe:
-    httpGet:
-      path: /ready
-      port: http-metrics
-    initialDelaySeconds: 45
-  datasource:
-    jsonData: "{}"
-    uid: ""
   persistence:
     enabled: true
     size: 5Gi
-
-fluent-bit:
-  enabled: true
+  grafana:
+    enabled: true
+    service:
+      type: NodePort
+      port: 80
+      targetPort: 3000
+    adminUser: admin
+    adminPassword: admin
+  promtail:
+    enabled: false
+  fluent-bit:
+    enabled: true
+  prometheus:
+    enabled: false
 
 services:
   - replicaCount: 1
