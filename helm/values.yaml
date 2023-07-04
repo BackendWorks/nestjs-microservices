@@ -2,15 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 kong:
-  name: nestjs-microservices-ingress
+  name: nestjs-ms-ingress
   env:
     database: "off"
   ingressController:
     enabled: true
     ingressClass: kong
+    annotations:
+      kubernetes.io/ingress.class: kong
+      konghq.com/override: grafana-dashboard
   admin:
-    tls:
-      parameters: []
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 8001
   paths:
     - path: /auth
       pathType: Prefix
@@ -28,27 +33,6 @@ kong:
       pathType: Prefix
       name: notification-service
       port: 9004
-
-loki-stack:
-  enabled: true
-  isDefault: true
-  persistence:
-    enabled: true
-    size: 5Gi
-  grafana:
-    enabled: true
-    service:
-      type: NodePort
-      port: 80
-      targetPort: 3000
-    adminUser: admin
-    adminPassword: admin
-  promtail:
-    enabled: false
-  fluent-bit:
-    enabled: true
-  prometheus:
-    enabled: false
 
 services:
   - replicaCount: 1
@@ -242,3 +226,33 @@ services:
       externalPort: 9002
       internalPort: 9002
     resources: {}
+
+loki-stack:
+  loki:
+    enabled: true 
+    replicas: 1 
+    persistence:
+      enabled: false 
+      storageClassName: "" 
+      accessModes: 
+        - ReadWriteOnce
+      size: 10Gi 
+    service:
+      type: ClusterIP 
+      port: 3100 
+    extraArgs: {}
+  grafana:
+    enabled: true
+    ingress: 
+      enabled: true  
+    service:
+      type: ClusterIP 
+      port: 80 
+    adminUser: admin 
+    adminPassword: password 
+  promtail:
+    enabled: false
+  fluent-bit:
+    enabled: true
+  prometheus:
+    enabled: false
