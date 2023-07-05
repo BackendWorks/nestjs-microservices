@@ -13,11 +13,11 @@ if [ -e $d/Dockerfile ]; then
     echo ">>> Logging into AWS ecr"
     aws ecr get-login-password --region <aws_region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/nestjs-microservices-${d%/}
     echo ">>> Deploying ${d%/}"
-    docker build -t nestjs-microservices-${d%/}:latest -f Dockerfile .
+    docker build -t nestjs-ms_${d%/}:latest -f Dockerfile .
     echo ">>> Build completed"
-    docker tag nestjs-microservices-${d%/}:latest <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/nestjs-microservices-${d%/}:latest
+    docker tag nestjs-ms_${d%/}:latest <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/nestjs-ms_${d%/}:latest
     echo ">>> Build tagged"
-    docker push <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/nestjs-microservices-${d%/}:latest
+    docker push <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/nestjs-ms_${d%/}:latest
     echo ">>> Build pushed"
     cd ..
 fi

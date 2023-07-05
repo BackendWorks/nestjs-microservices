@@ -1,4 +1,4 @@
-# Default values for nestjs-microservices.
+# Default values for nestjs-ms.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 kong:
@@ -8,14 +8,9 @@ kong:
   ingressController:
     enabled: true
     ingressClass: kong
-    annotations:
-      kubernetes.io/ingress.class: kong
-      konghq.com/override: grafana-dashboard
   admin:
-    enabled: true
-    service:
-      type: ClusterIP
-      port: 8001
+    tls:
+      parameters: []
   paths:
     - path: /auth
       pathType: Prefix
@@ -39,7 +34,7 @@ services:
     name: auth
     nameSpace: default
     image:
-      repository: nestjs-microservices_auth
+      repository: nestjs-ms_auth
       tag: latest
       pullPolicy: Never
     deployment:
@@ -94,7 +89,7 @@ services:
     name: files
     nameSpace: default
     image:
-      repository: nestjs-microservices_files
+      repository: nestjs-ms_files
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
@@ -133,7 +128,7 @@ services:
     pathEnabled: false
     nameSpace: default
     image:
-      repository: nestjs-microservices_mailer
+      repository: nestjs-ms_mailer
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
@@ -166,7 +161,7 @@ services:
     name: notification
     nameSpace: default
     image:
-      repository: nestjs-microservices_notification
+      repository: nestjs-ms_notification
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
@@ -200,7 +195,7 @@ services:
     name: post
     nameSpace: default
     image:
-      repository: nestjs-microservices_post
+      repository: nestjs-ms_post
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
@@ -229,27 +224,37 @@ services:
 
 loki-stack:
   loki:
-    enabled: true 
-    replicas: 1 
+    enabled: true
+    replicas: 1
     persistence:
-      enabled: false 
-      storageClassName: "" 
-      accessModes: 
+      enabled: false
+      storageClassName: ""
+      accessModes:
         - ReadWriteOnce
-      size: 10Gi 
+      size: 10Gi
     service:
-      type: ClusterIP 
-      port: 3100 
+      type: ClusterIP
+      port: 3100
     extraArgs: {}
   grafana:
     enabled: true
-    ingress: 
-      enabled: true  
+    replicas: 1
+    # grafana.ini:
+    #   server: 
+    #     root_url: grafana.domain
+    # ingress:
+    #   enabled: true
+    #   hosts:
+    #     - grafana.domain
+    #   annotations:
+    #     kubernetes.io/ingress.class: "kong"
     service:
-      type: ClusterIP 
-      port: 80 
-    adminUser: admin 
-    adminPassword: password 
+      enabled: true
+      type: NodePort
+      port: 80
+      targetPort: 3000
+    adminUser: admin
+    adminPassword: password
   promtail:
     enabled: false
   fluent-bit:
