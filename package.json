@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Nestjs RabbitMQ Microservices",
   "scripts": {
-    "deploy": "sh deploy.sh",
-    "up": "docker compose -f docker-compose.core.yml up -d",
-    "down": "docker compose -f docker-compose.core.yml down"
+    "deploy": "sh deploy.sh"
   },
   "keywords": [
     "microservices",
