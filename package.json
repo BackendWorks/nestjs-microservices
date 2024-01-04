@@ -7,7 +7,13 @@
   },
   "keywords": [
     "microservices",
-    "nestjs"
+    "nestjs",
+    "rabbitmq",
+    "cognito",
+    "grafana",
+    "docker",
+    "kubernetes",
+    "aws"
   ],
   "author": "hmake98",
   "license": "MIT"
