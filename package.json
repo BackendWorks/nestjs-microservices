@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Nestjs RabbitMQ Microservices",
   "scripts": {
-    "deploy": "sh deploy.sh"
+    "deploy": "sh deploy.sh",
+    "build": "sh build.sh"
   },
   "keywords": [
     "microservices",
