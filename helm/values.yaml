@@ -1,4 +1,4 @@
-# Default values for nestjs-ms.
+# Default values for nestjs.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 kong:
@@ -124,40 +124,6 @@ services:
       internalPort: 9003
     resources: {}
   - replicaCount: 1
-    name: mailer
-    pathEnabled: false
-    nameSpace: default
-    image:
-      repository: nestjs-ms_mailer
-      tag: latest
-      pullPolicy: IfNotPresent
-    deployment:
-      restartPolicy: Always
-    env:
-      - key: NODE_ENV
-        value: development
-      - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_MAILER_QUEUE
-        value: mailer_queue
-      - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: REDIS_HOST
-        value: host.minikube.internal
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_PASSWORD
-        value: master123
-      - key: AWS_ACCESS_KEY
-        value: ""
-      - key: AWS_SECRET_KEY
-        value: ""
-      - key: AWS_REGION
-        value: ""
-      - key: SOURCE_EMAIL
-        value: ""
-    resources: {}
-  - replicaCount: 1
     name: notification
     nameSpace: default
     image:
@@ -240,7 +206,7 @@ loki-stack:
     enabled: true
     replicas: 1
     # grafana.ini:
-    #   server: 
+    #   server:
     #     root_url: grafana.domain
     # ingress:
     #   enabled: true

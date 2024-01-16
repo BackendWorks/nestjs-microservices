@@ -40,24 +40,6 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: post-service
-  mailer:
-    build:
-      context: ./mailer
-      dockerfile: Dockerfile.dev
-    restart: on-failure
-    env_file:
-      - ./mailer/.env.local
-    networks:
-      - backend
-    volumes:
-      - ./mailer:/app/mailer
-      - /app/mailer/node_modules
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: mailer-service
   files:
     build:
       context: ./files
@@ -153,9 +135,6 @@ services:
     image: mongo:latest
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: master123
     volumes:
       - mongo_data:/data/db
     networks:
