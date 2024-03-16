@@ -1,6 +1,7 @@
 version: "3"
+
 services:
-  auth:
+  auth-service:
     build:
       context: ./auth
       dockerfile: Dockerfile.dev
@@ -20,7 +21,8 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: auth-service
-  post:
+
+  post-service:
     build:
       context: ./post
       dockerfile: Dockerfile.dev
@@ -40,7 +42,8 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: post-service
-  files:
+
+  files-service:
     build:
       context: ./files
       dockerfile: Dockerfile.dev
@@ -60,7 +63,8 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: files-service
-  notification:
+
+  notification-service:
     build:
       context: ./notification
       dockerfile: Dockerfile.dev
@@ -80,6 +84,7 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: notification-service
+
   kong:
     build:
       context: ./kong
@@ -97,6 +102,7 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: kong
+
   postgres:
     image: postgres:latest
     ports:
@@ -109,6 +115,7 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - backend
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
@@ -121,6 +128,7 @@ services:
       - rabbit_data:/var/lib/rabbitmq
     networks:
       - backend
+
   redis:
     image: redis:latest
     restart: always
@@ -131,6 +139,7 @@ services:
       - "6379:6379"
     networks:
       - backend
+
   mongodb:
     image: mongo:latest
     ports:
@@ -139,6 +148,7 @@ services:
       - mongo_data:/data/db
     networks:
       - backend
+
   fluent-bit:
     environment:
       LOG_LEVEL: debug
@@ -151,12 +161,14 @@ services:
       - "24224:24224/udp"
     networks:
       - backend
+
   loki:
     image: grafana/loki:latest
     expose:
       - "3100"
     networks:
       - backend
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -167,6 +179,7 @@ services:
       GF_LOG_FILTERS: rendering:debug
     networks:
       - backend
+
   renderer:
     image: grafana/grafana-image-renderer:latest
     expose:
@@ -175,9 +188,11 @@ services:
       ENABLE_METRICS: "true"
     networks:
       - backend
+
 networks:
   backend:
     driver: bridge
+
 volumes:
   pg_data:
     driver: local

@@ -1,29 +1,28 @@
-version: "3"
+version: "3.8"
+
 services:
   postgres:
     image: postgres:latest
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=master123
-      - POSTGRES_DB=postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: master123
+      POSTGRES_DB: postgres
     volumes:
       - pg_data:/var/lib/postgresql/data
-    networks:
-      - backend
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=master123
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: master123
     volumes:
       - rabbit_data:/var/lib/rabbitmq
-    networks:
-      - backend
+
   redis:
     image: redis:latest
     restart: always
@@ -32,25 +31,20 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
-    networks:
-      - backend
+
   mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    networks:
-      - backend
+
 networks:
   backend:
     driver: bridge
+
 volumes:
   pg_data:
-    driver: local
   rabbit_data:
-    driver: local
   mongo_data:
-    driver: local
   redis_data:
-    driver: local

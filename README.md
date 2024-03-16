@@ -1,10 +1,4 @@
-<h1 align="center"> (Development in progress of version 2) </h1>
-
-- [x] Auth (Done)
-- [x] Post (Done)
-- [ ] Notification (In progress)
-- [x] Mailer (Removed)
-- [ ] Files (In progress)
+<h1 align="center"> (Testing in progress of version 2) </h1>
 
 # NestJS Microservices with RabbitMQ / Grafana / Helm Charts
 
