@@ -45,6 +45,10 @@ networks:
 
 volumes:
   pg_data:
+    driver: local
   rabbit_data:
+    driver: local
   mongo_data:
+    driver: local
   redis_data:
+    driver: local

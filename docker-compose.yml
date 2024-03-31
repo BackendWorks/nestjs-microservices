@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   auth-service:
@@ -9,18 +9,18 @@ services:
     ports:
       - "9001:9001"
     env_file:
-      - ./auth/.env.local
+      - ./auth/.env.docker
     networks:
       - backend
     volumes:
       - ./auth:/app/auth
       - /app/auth/node_modules
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: auth-service
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     fluentd-async: "true"
+    #     fluentd-address: localhost:24224
+    #     tag: auth-service
 
   post-service:
     build:
@@ -30,18 +30,18 @@ services:
     ports:
       - "9002:9002"
     env_file:
-      - ./post/.env.local
+      - ./post/.env.docker
     networks:
       - backend
     volumes:
       - ./post:/app/post
       - /app/post/node_modules
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: post-service
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     fluentd-async: "true"
+    #     fluentd-address: localhost:24224
+    #     tag: post-service
 
   files-service:
     build:
@@ -51,18 +51,18 @@ services:
     ports:
       - "9003:9003"
     env_file:
-      - ./files/.env.local
+      - ./files/.env.docker
     networks:
       - backend
     volumes:
       - ./files:/app/files
       - /app/files/node_modules
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: files-service
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     fluentd-async: "true"
+    #     fluentd-address: localhost:24224
+    #     tag: files-service
 
   notification-service:
     build:
@@ -72,18 +72,18 @@ services:
     ports:
       - "9004:9004"
     env_file:
-      - ./notification/.env.local
+      - ./notification/.env.docker
     networks:
       - backend
     volumes:
       - ./notification:/app/notification
       - /app/notification/node_modules
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: notification-service
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     fluentd-async: "true"
+    #     fluentd-address: localhost:24224
+    #     tag: notification-service
 
   kong:
     build:
@@ -146,46 +146,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    networks:
-      - backend
-
-  fluent-bit:
-    environment:
-      LOG_LEVEL: debug
-      LOKI_URL: http://loki:3100/loki/api/v1/push
-    build:
-      context: ./fluent-bit
-      dockerfile: Dockerfile
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-    networks:
-      - backend
-
-  loki:
-    image: grafana/loki:latest
-    expose:
-      - "3100"
-    networks:
-      - backend
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      GF_RENDERING_SERVER_URL: http://renderer:8081/render
-      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
-      GF_LOG_FILTERS: rendering:debug
-    networks:
-      - backend
-
-  renderer:
-    image: grafana/grafana-image-renderer:latest
-    expose:
-      - "8081"
-    environment:
-      ENABLE_METRICS: "true"
     networks:
       - backend
 

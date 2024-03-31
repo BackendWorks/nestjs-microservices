@@ -32,9 +32,9 @@ build_and_push_image() {
     echo ">>> Building $image_name"
     docker build -t "$image_name" -f Dockerfile .
     echo ">>> Tagging $image_name"
-    docker tag "$image_name" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/nestjs-ms_$service_name:latest"
+    docker tag "$image_name" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$service_name:latest"
     echo ">>> Pushing $image_name"
-    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/nestjs-ms_$service_name:latest"
+    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$service_name:latest"
 }
 
 aws_ecr_login && build_and_push_image

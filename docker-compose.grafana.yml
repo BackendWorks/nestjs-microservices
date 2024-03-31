@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  fluent-bit:
+    environment:
+      LOG_LEVEL: debug
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    build:
+      context: ./fluent-bit
+      dockerfile: Dockerfile
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - backend
+
+  loki:
+    image: grafana/loki:latest
+    expose:
+      - "3100"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+    networks:
+      - backend
+
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    expose:
+      - "8081"
+    environment:
+      ENABLE_METRICS: "true"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
