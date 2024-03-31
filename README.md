@@ -1,5 +1,3 @@
-<h1 align="center"> (Testing in progress of version 2) </h1>
-
 # NestJS Microservices with RabbitMQ / Grafana / Helm Charts
 
 Fully managed Microservices starter pack using **NestJS / RabbitMQ**. created with SQL, NoSQL databases, Kong API Gateway, Grafana Logging stack and Helm charts.
@@ -22,8 +20,7 @@ For Linux, I would recommend this tool for docker container inspection: https://
 ## Get started Notes:
 
 - Use `git submodule update --init --recursive` command to update/fetch submodules.
-- Use `.env.local` file while working on local environment and use `.env` for production.
-- Make sure to change **service name** to **localhost** in `.env.local` while running single service only in terminal.
+- Use `.env.local` file while working on local environment, use `.env.docker` for docker compose environment and use `.env` for production.
 - `kong.yml` from `kong/conf/kong.yml` file is configured for api gateway.
 - Kong development server endpoint will start on port `8000`.
 - Health endpoint: `host:port/api/health`
@@ -31,50 +28,39 @@ For Linux, I would recommend this tool for docker container inspection: https://
 
 ## Run in local
 
-start core services first (postgres, rabbitmq, mongodb, redis)
+Start core services first (postgres, rabbitmq, mongodb, redis)
 
 ```bash
-npm run up
+yarn dep:up
 ```
 
-Now, first place `.env` file in service folder
-then go to service folder `cd auth`
+Now go to service folder
 
 ```bash
-npm run dev
+yarn dev
 ```
 
-to stop core services, run
+To stop core services, run
 
 ```bash
-npm run down
+yarn dep:down
 ```
 
-## Run in local with docker-compose
-
-start core services
+## Run all services in local with docker-compose
 
 ```bash
-npm run up
+docker compose up
+docker compose down
 ```
 
-docker-compose command - this will take env variables from .env.local
+To run grafana stack in local
 
 ```bash
-docker-compose up "service name"
+yarn grafana:up
+yarn grafana:down
 ```
 
-rebuild
-
-```bash
-docker-compose up "service name" --build
-```
-
-#### Run all services in Local Env using docker-compose
-
-```bash
-docker-compose up
-```
+Note: to attach fluent bit container with service container make sure that you enable logging configuration in docker-compose.yml file.
 
 ## Setup Grafana Dashboard in Local Env
 
