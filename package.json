@@ -6,8 +6,10 @@
     "deploy": "sh deploy.sh",
     "build": "sh build.sh",
     "dep:up": "docker compose -f docker-compose.dep.yml up",
+    "dep:build": "docker compose -f docker-compose.dep.yml build",
     "dep:down": "docker compose -f docker-compose.dep.yml down",
     "grafana:up": "docker compose -f docker-compose.grafana.yml up",
+    "grafana:build": "docker compose -f docker-compose.grafana.yml build",
     "grafana:down": "docker compose -f docker-compose.grafana.yml down"
   },
   "keywords": [

@@ -31,13 +31,14 @@ services:
         strip_path: true
   - name: notification_service
     host: notification
-    port: 9003
+    port: 9004
     protocol: http
     routes:
       - name: notification_route
         paths:
           - /notification
         strip_path: true
+
 plugins:
   - name: rate-limiting
     config:
