@@ -1,5 +1,6 @@
 services:
   auth-service:
+    hostname: auth
     build:
       context: ./auth
       dockerfile: Dockerfile.dev
@@ -21,6 +22,7 @@ services:
         tag: auth-service
 
   post-service:
+    hostname: post
     build:
       context: ./post
       dockerfile: Dockerfile.dev
@@ -42,6 +44,7 @@ services:
         tag: post-service
 
   files-service:
+    hostname: files
     build:
       context: ./files
       dockerfile: Dockerfile.dev
@@ -63,6 +66,7 @@ services:
         tag: files-service
 
   notification-service:
+    hostname: notification
     build:
       context: ./notification
       dockerfile: Dockerfile.dev
@@ -90,8 +94,9 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
-      - "8001:8001"
       - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
     networks:
       - backend
     logging:

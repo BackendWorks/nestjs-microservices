@@ -11,6 +11,7 @@ services:
         paths:
           - /auth
         strip_path: true
+
   - name: post_service
     host: post
     port: 9002
@@ -20,6 +21,7 @@ services:
         paths:
           - /post
         strip_path: true
+
   - name: files_service
     host: files
     port: 9003
@@ -29,6 +31,7 @@ services:
         paths:
           - /files
         strip_path: true
+
   - name: notification_service
     host: notification
     port: 9004
