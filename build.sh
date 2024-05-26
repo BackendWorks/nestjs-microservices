@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Function to build a Docker image for a given folder
 build_docker_image() {
     local folder="$1"
-    local service_name=$(basename "$folder")
+    local service_name="nestjs-microservices-$(basename "$folder")"
     if [[ -e "$folder/Dockerfile" ]]; then
         echo ">>> Building service ${service_name}..."
         if docker build -t "${service_name}:latest" -f "$folder/Dockerfile" "$folder"; then
@@ -14,10 +13,10 @@ build_docker_image() {
     fi
 }
 
-# Export the function to be used by parallel
-export -f build_docker_image
-
-# Find all directories with a Dockerfile and build images in parallel
-find . -maxdepth 1 -type d -not -path '.' -print0 | xargs -0 -n 1 -P $(nproc) bash -c 'build_docker_image "$0"'
+for dir in */; do
+    if [[ -e "${dir}/Dockerfile" ]]; then
+        build_docker_image "$dir"
+    fi
+done
 
 echo ">>> All builds completed"

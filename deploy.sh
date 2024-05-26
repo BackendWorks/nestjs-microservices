@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# Function to log into AWS ECR
 aws_ecr_login() {
     echo ">>> Logging into AWS ECR"
     aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 }
 
-# Function to build and push Docker image
 build_and_push_image() {
     local service_name="$1"
     local image_name="nestjs_$service_name:latest"
@@ -32,7 +30,6 @@ build_and_push_image() {
     fi
 }
 
-# Main script execution
 printf "Please select service:\n"
 select d in */; do
     test -n "$d" && break
