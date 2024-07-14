@@ -104,7 +104,7 @@ minikube start
 Now, install helm charts
 
 ```bash
-helm install nestjs-ms helm
+helm install backendworks helm
 ```
 
 To get services endpoints
@@ -117,12 +117,12 @@ minikube service list
 # check loki stack installed in current namespace
 helm list
 # NAME     	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART           	APP VERSION
-# nestjs-ms	default  	1       	2023-02-27 19:11:14.537649934 +0530 IST	deployed	nestjs-ms-0.1.0 	1.0.0
+# backendworks	default  	1       	2023-02-27 19:11:14.537649934 +0530 IST	deployed	backendworks-0.1.0 	1.0.0
 
 # now get loki IP from k8s cluster
-kubectl get service nestjs-ms-loki
+kubectl get service backendworks-loki
 # NAME             TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-# nestjs-ms-loki   ClusterIP   10.102.161.158   <none>        3100/TCP   28m
+# backendworks-loki   ClusterIP   10.102.161.158   <none>        3100/TCP   28m
 
 # use this ClusterIP to add datasource Loki in grafana dashboard
 
@@ -134,13 +134,13 @@ minikube service list
 # | default     | auth-service                      | No node port       |                           |
 # | default     | files-service                     | No node port       |                           |
 # | default     | kubernetes                        | No node port       |                           |
-# | default     | nestjs-ms-grafana                 | service/80         | http://192.168.49.2:31679 |
-# | default     | nestjs-ms-kong-proxy              | kong-proxy/80      | http://192.168.49.2:32083 |
+# | default     | backendworks-grafana                 | service/80         | http://192.168.49.2:31679 |
+# | default     | backendworks-kong-proxy              | kong-proxy/80      | http://192.168.49.2:32083 |
 # |             |                                   | kong-proxy-tls/443 | http://192.168.49.2:31251 |
-# | default     | nestjs-ms-kong-validation-webhook | No node port       |                           |
-# | default     | nestjs-ms-loki                    | No node port       |                           |
-# | default     | nestjs-ms-loki-headless           | No node port       |                           |
-# | default     | nestjs-ms-loki-memberlist         | No node port       |                           |
+# | default     | backendworks-kong-validation-webhook | No node port       |                           |
+# | default     | backendworks-loki                    | No node port       |                           |
+# | default     | backendworks-loki-headless           | No node port       |                           |
+# | default     | backendworks-loki-memberlist         | No node port       |                           |
 # | default     | notification-service              | No node port       |                           |
 # | default     | post-service                      | No node port       |                           |
 # | kube-system | kube-dns                          | No node port       |                           |
@@ -152,5 +152,5 @@ minikube service list
 Clean up the local env
 
 ```bash
-helm uninstall nestjs-ms
+helm uninstall backendworks
 ```
