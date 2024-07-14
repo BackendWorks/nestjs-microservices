@@ -1,8 +1,10 @@
-# Default values for nestjs.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Global settings
+global:
+  environment: development
+
+# Kong API Gateway configuration
 kong:
-  name: nestjs-ms-ingress
+  name: backendworks-ingress
   env:
     database: "off"
   ingressController:
@@ -11,6 +13,16 @@ kong:
   admin:
     tls:
       parameters: []
+  ingressAnnotations:
+    # Add any additional annotations here
+    # konghq.com/protocols: "https"
+  tls:
+    []
+    # - hosts:
+    #     - your-domain.com
+    #   secretName: your-tls-secret
+  rateLimiting:
+    perMinute: 60
   paths:
     - path: /auth
       pathType: Prefix
@@ -29,201 +41,319 @@ kong:
       name: notification-service
       port: 9004
 
+# Microservices configuration
 services:
-  - replicaCount: 1
-    name: auth
+  - name: auth
     nameSpace: default
+    replicaCount: 1
     image:
-      repository: nestjs-ms_auth
+      repository: backendworks-auth
       tag: latest
-      pullPolicy: Never
+      pullPolicy: IfNotPresent
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9001"
+    imagePullSecrets: [] # Add image pull secrets here if needed
     deployment:
       restartPolicy: Always
     env:
-      - key: NODE_ENV
+      - key: APP_NAME
+        value: "@backendworks/auth"
+      - key: APP_ENV
         value: development
-      - key: PORT
+      - key: HTTP_ENABLE
+        value: "true"
+      - key: HTTP_HOST
+        value: "0.0.0.0"
+      - key: HTTP_PORT
         value: "9001"
-      - key: TOKEN_EXP
-        value: 86400s
-      - key: AUTH_SECRET
-        value: my_secret_key
+      - key: HTTP_VERSIONING_ENABLE
+        value: "true"
+      - key: HTTP_VERSION
+        value: "1"
+      - key: ACCESS_TOKEN_SECRET_KEY
+        value: "testme"
+      - key: ACCESS_TOKEN_EXPIRED
+        value: "1d"
+      - key: REFRESH_TOKEN_SECRET_KEY
+        value: "testme"
+      - key: REFRESH_TOKEN_EXPIRED
+        value: "7d"
       - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_TOKEN_QUEUE
-        value: token_queue
-      - key: RABBITMQ_MAILER_QUEUE
-        value: mailer_queue
-      - key: RABBITMQ_FILES_QUEUE
-        value: files_queue
+        value: "amqp://admin:master123@rabbitmq:5672"
       - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: notification_queue
+        value: "auth_queue"
       - key: DATABASE_URL
-        value: "postgresql://admin:master123@host.minikube.internal:5432/user-db?schema=public"
-      - key: AWS_COGNITO_USER_POOL_ID
-        value: ap-south-1_gR5KggzuW
-      - key: AWS_COGNITO_AUTHORITY
-        value: https://cognito-idp.ap-south-1.amazonaws.com
-      - key: AWS_COGNITO_CLIENT_ID
-        value: 5vqpp7t39j2vl5lr9vjmcmurjq
+        value: "postgresql://admin:master123@postgres:5432/auth_db?schema=public"
     service:
       name: auth-service
       type: ClusterIP
       externalPort: 9001
       internalPort: 9001
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9001"
     resources:
-      {}
-      # We usually recommend not to specify default resources and to leave this as a conscious
-      # choice for the user. This also increases chances charts run on environments with little
-      # resources, such as Minikube. If you do want to specify resources, uncomment the following
-      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-      # limits:
-      #  cpu: 100m
-      #  memory: 128Mi
-      # requests:
-      #  cpu: 100m
-      #  memory: 128Mi
-  - replicaCount: 1
-    name: files
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+
+  - name: files
     nameSpace: default
+    replicaCount: 1
     image:
-      repository: nestjs-ms_files
+      repository: backendworks-files
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
       restartPolicy: Always
     env:
-      - key: NODE_ENV
+      - key: APP_NAME
+        value: "@backendworks/files"
+      - key: APP_ENV
         value: development
-      - key: PORT
+      - key: HTTP_ENABLE
+        value: "true"
+      - key: HTTP_HOST
+        value: "0.0.0.0"
+      - key: HTTP_PORT
         value: "9003"
+      - key: HTTP_VERSIONING_ENABLE
+        value: "true"
+      - key: HTTP_VERSION
+        value: "1"
       - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
+        value: "amqp://admin:master123@rabbitmq:5672"
       - key: RABBITMQ_FILES_QUEUE
-        value: files_queue
+        value: "files_queue"
       - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
+        value: "auth_queue"
       - key: DATABASE_URL
-        value: mongodb://host.minikube.internal:27017/files-db
-      - key: AWS_EXPIRE_LINK
+        value: "mongodb://mongodb:27017/files"
+      - key: AWS_S3_REGION
         value: ""
-      - key: AWS_ACCESS_KEY
+      - key: AWS_S3_ACCESS_KEY
         value: ""
-      - key: AWS_SECRET_KEY
+      - key: AWS_S3_SECRET_KEY
         value: ""
-      - key: AWS_REGION
-        value: ""
-      - key: AWS_BUCKET
+      - key: AWS_S3_BUCKET
         value: ""
     service:
       name: files-service
       type: ClusterIP
       externalPort: 9003
       internalPort: 9003
-    resources: {}
-  - replicaCount: 1
-    name: notification
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+
+  - name: notification
     nameSpace: default
+    replicaCount: 1
     image:
-      repository: nestjs-ms_notification
+      repository: backendworks-notification
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
       restartPolicy: Always
     env:
-      - key: PORT
-        value: "9004"
-      - key: NODE_ENV
+      - key: APP_NAME
+        value: "@backendworks/notification"
+      - key: APP_ENV
         value: development
+      - key: HTTP_ENABLE
+        value: "true"
+      - key: HTTP_HOST
+        value: "0.0.0.0"
+      - key: HTTP_PORT
+        value: "9004"
+      - key: HTTP_VERSIONING_ENABLE
+        value: "true"
+      - key: HTTP_VERSION
+        value: "1"
       - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
-      - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
+        value: "amqp://admin:master123@rabbitmq:5672"
       - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: notification_queue
+        value: "notification_queue"
+      - key: RABBITMQ_AUTH_QUEUE
+        value: "auth_queue"
       - key: DATABASE_URL
-        value: mongodb://host.minikube.internal:27017/notificaiton-db
-      - key: REDIS_HOST
-        value: host.minikube.internal
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_PASSWORD
-        value: master123
+        value: "mongodb://mongodb:27017/notifications"
+      - key: AWS_SES_REGION
+        value: ""
+      - key: AWS_SES_ACCESS_KEY
+        value: ""
+      - key: AWS_SES_SECRET_KEY
+        value: ""
+      - key: AWS_SES_SOURCE_EMAIL
+        value: ""
     service:
       name: notification-service
       type: ClusterIP
       externalPort: 9004
       internalPort: 9004
-    resources: {}
-  - replicaCount: 1
-    name: post
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+
+  - name: post
     nameSpace: default
+    replicaCount: 1
     image:
-      repository: nestjs-ms_post
+      repository: backendworks-post
       tag: latest
       pullPolicy: IfNotPresent
     deployment:
       restartPolicy: Always
     env:
-      - key: PORT
-        value: "9002"
-      - key: NODE_ENV
+      - key: APP_NAME
+        value: "@backendworks/post"
+      - key: APP_ENV
         value: development
+      - key: HTTP_ENABLE
+        value: "true"
+      - key: HTTP_HOST
+        value: "0.0.0.0"
+      - key: HTTP_PORT
+        value: "9002"
+      - key: HTTP_VERSIONING_ENABLE
+        value: "true"
+      - key: HTTP_VERSION
+        value: "1"
       - key: RABBITMQ_URL
-        value: amqp://admin:master123@host.minikube.internal:5672
+        value: "amqp://admin:master123@rabbitmq:5672"
       - key: RABBITMQ_AUTH_QUEUE
-        value: auth_queue
-      - key: RABBITMQ_MAILER_QUEUE
-        value: mailer_queue
+        value: "auth_queue"
       - key: RABBITMQ_POST_QUEUE
-        value: post_queue
+        value: "post_queue"
       - key: DATABASE_URL
-        value: postgresql://admin:master123@host.minikube.internal:5432/post-db?schema=public
+        value: "postgresql://admin:master123@postgres:5432/nestjs_post_db?schema=public"
     service:
       name: post-service
       type: ClusterIP
       externalPort: 9002
       internalPort: 9002
-    resources: {}
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: http
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: http
 
+# Loki Stack configuration
 loki-stack:
   loki:
     enabled: true
     replicas: 1
     persistence:
-      enabled: false
-      storageClassName: ""
+      enabled: true
+      storageClassName: "standard"
       accessModes:
         - ReadWriteOnce
       size: 10Gi
     service:
       type: ClusterIP
       port: 3100
-    extraArgs: {}
+    config:
+      schema_config:
+        configs:
+          - from: 2020-05-15
+            store: boltdb-shipper
+            object_store: filesystem
+            schema: v11
+            index:
+              prefix: index_
+              period: 24h
+
   grafana:
     enabled: true
     replicas: 1
-    # grafana.ini:
-    #   server:
-    #     root_url: grafana.domain
-    # ingress:
-    #   enabled: true
-    #   hosts:
-    #     - grafana.domain
-    #   annotations:
-    #     kubernetes.io/ingress.class: "kong"
     service:
-      enabled: true
       type: NodePort
       port: 80
       targetPort: 3000
     adminUser: admin
     adminPassword: password
+    persistence:
+      enabled: true
+      storageClassName: "standard"
+      accessModes:
+        - ReadWriteOnce
+      size: 5Gi
+
   promtail:
     enabled: false
   fluent-bit:
     enabled: true
+    config:
+      inputs: |
+        [INPUT]
+            Name tail
+            Path /var/log/containers/*.log
+            Parser docker
+            Tag kube.*
+            Mem_Buf_Limit 5MB
+            Skip_Long_Lines On
+      filters: |
+        [FILTER]
+            Name kubernetes
+            Match kube.*
+            Merge_Log On
+            Keep_Log Off
+            K8S-Logging.Parser On
+            K8S-Logging.Exclude On
+      outputs: |
+        [OUTPUT]
+            Name loki
+            Match kube.*
+            Host loki
+            Port 3100
+            Labels job=fluentbit
+            Label_Keys $kubernetes['pod_name'],$kubernetes['namespace_name']
+            Line_Format json
   prometheus:
     enabled: false

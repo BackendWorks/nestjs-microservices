@@ -3,13 +3,10 @@
   "version": "2.0.0",
   "description": "Nestjs RabbitMQ Microservices with Saga pattern",
   "scripts": {
-    "deploy": "sh deploy.sh",
-    "build": "sh build.sh",
-    "dep:up": "docker compose -f docker-compose.dep.yml up",
-    "dep:build": "docker compose -f docker-compose.dep.yml build",
-    "dep:down": "docker compose -f docker-compose.dep.yml down",
+    "deploy": "sh scripts/deploy.sh",
+    "local:up": "docker compose -f docker-compose.local.yml up",
+    "local:down": "docker compose -f docker-compose.local.yml down",
     "grafana:up": "docker compose -f docker-compose.grafana.yml up",
-    "grafana:build": "docker compose -f docker-compose.grafana.yml build",
     "grafana:down": "docker compose -f docker-compose.grafana.yml down"
   },
   "keywords": [

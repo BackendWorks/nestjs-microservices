@@ -19,6 +19,7 @@ For Linux, I would recommend this tool for docker container inspection: https://
 
 ## Get started Notes:
 
+- MOST IMPORTANT: for prisma error regarding mongodb transaction [link](https://github.com/prisma/prisma/issues/8266), to workaround exec this in mongodb docker container using `mongosh` and run `rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]});`
 - Use `git submodule update --init --recursive` command to update/fetch submodules.
 - Use `.env.local` file while working on local environment, use `.env.docker` for docker compose environment and use `.env` for production.
 - `kong.yml` from `kong/conf/kong.yml` file is configured for api gateway.

@@ -1,27 +1,56 @@
-{{- $dot := . }}
-{{- range $value := .Values.services | default dict }}
+{{- $dot := . -}}
+{{- range $value := .Values.services }}
 {{- if $value.service }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ $value.service.name }}"
-  namespace: "{{ $value.nameSpace }}"
+  name: {{ $value.service.name | quote }}
+  namespace: {{ $value.nameSpace | default $dot.Release.Namespace | quote }}
   labels:
-    app: "{{ $value.name }}"
-    chart: "{{ $dot.Chart.Name }}"
-    version: "{{ $dot.Chart.Version }}"
+    app: {{ $value.name | quote }}
+    chart: {{ $dot.Chart.Name | quote }}
+    release: {{ $dot.Release.Name | quote }}
+    heritage: {{ $dot.Release.Service | quote }}
+  {{- if $value.service.annotations }}
+  annotations:
+{{ toYaml $value.service.annotations | indent 4 }}
+  {{- end }}
 spec:
   type: {{ $value.service.type }}
+  {{- if eq $value.service.type "LoadBalancer" }}
+  {{- if $value.service.loadBalancerIP }}
+  loadBalancerIP: {{ $value.service.loadBalancerIP }}
+  {{- end }}
+  {{- if $value.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml $value.service.loadBalancerSourceRanges | indent 4 }}
+  {{- end }}
+  {{- end }}
   ports:
-  - port: {{ $value.service.externalPort }}
-    targetPort: {{ $value.service.internalPort }}
-    protocol: TCP
+    - port: {{ $value.service.externalPort }}
+      targetPort: {{ $value.service.internalPort }}
+      protocol: TCP
+      name: http
+      {{- if (and (eq $value.service.type "NodePort") $value.service.nodePort) }}
+      nodePort: {{ $value.service.nodePort }}
+      {{- end }}
   selector:
-    app: "{{ $value.name }}"
-    chart: "{{ $dot.Chart.Name }}"
-    version: "{{ $dot.Chart.Version }}"
+    app: {{ $value.name | quote }}
+    release: {{ $dot.Release.Name | quote }}
+  {{- if $value.service.externalIPs }}
+  externalIPs:
+{{ toYaml $value.service.externalIPs | indent 4 }}
+  {{- end }}
+  {{- if $value.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $value.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if $value.service.sessionAffinity }}
+  sessionAffinity: {{ $value.service.sessionAffinity }}
+  {{- if $value.service.sessionAffinityConfig }}
+  sessionAffinityConfig:
+{{ toYaml $value.service.sessionAffinityConfig | indent 4 }}
+  {{- end }}
+  {{- end }}
 {{- end }}
 {{- end }}
-
-

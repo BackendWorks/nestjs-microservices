@@ -1,9 +1,11 @@
+version: "3.8"
+
 services:
   auth-service:
     hostname: auth
     build:
       context: ./auth
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "9001:9001"
@@ -25,7 +27,7 @@ services:
     hostname: post
     build:
       context: ./post
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "9002:9002"
@@ -47,7 +49,7 @@ services:
     hostname: files
     build:
       context: ./files
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "9003:9003"
@@ -69,7 +71,7 @@ services:
     hostname: notification
     build:
       context: ./notification
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     restart: on-failure
     ports:
       - "9004:9004"
@@ -104,64 +106,8 @@ services:
       options:
         fluentd-async: "true"
         fluentd-address: localhost:24224
-        tag: kong
-
-  postgres:
-    image: postgres:latest
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=master123
-      - POSTGRES_DB=postgres
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    networks:
-      - backend
-
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=master123
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
-    networks:
-      - backend
-
-  redis:
-    image: redis:latest
-    restart: always
-    command: redis-server --save 20 1 --loglevel warning --requirepass master123
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - backend
-
-  mongodb:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - backend
+        tag: kong-gateway
 
 networks:
   backend:
     driver: bridge
-
-volumes:
-  pg_data:
-    driver: local
-  rabbit_data:
-    driver: local
-  mongo_data:
-    driver: local
-  redis_data:
-    driver: local

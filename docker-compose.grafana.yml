@@ -1,8 +1,10 @@
+version: "3.8"
+
 services:
   fluent-bit:
     environment:
-      LOG_LEVEL: debug
-      LOKI_URL: http://loki:3100/loki/api/v1/push
+      - LOG_LEVEL=debug
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
     build:
       context: ./fluent-bit
       dockerfile: Dockerfile
@@ -11,6 +13,7 @@ services:
       - "24224:24224/udp"
     networks:
       - backend
+    restart: unless-stopped
 
   loki:
     image: grafana/loki:latest
@@ -18,29 +21,40 @@ services:
       - "3100"
     networks:
       - backend
+    volumes:
+      - loki_data:/data
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: master123
-      GF_RENDERING_SERVER_URL: http://renderer:8081/render
-      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
-      GF_LOG_FILTERS: rendering:debug
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=master123
+      - GF_RENDERING_SERVER_URL=http://renderer:8081/render
+      - GF_RENDERING_CALLBACK_URL=http://grafana:3000/
+      - GF_LOG_FILTERS=rendering:debug
     networks:
       - backend
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
 
   renderer:
     image: grafana/grafana-image-renderer:latest
     expose:
       - "8081"
     environment:
-      ENABLE_METRICS: "true"
+      - ENABLE_METRICS=true
     networks:
       - backend
+    restart: unless-stopped
 
 networks:
   backend:
     driver: bridge
+
+volumes:
+  loki_data:
+  grafana_data:
