@@ -1,56 +1,29 @@
-{{- $dot := . -}}
-{{- range $value := .Values.services }}
-{{- if $value.service }}
+{{- range $serviceName, $serviceConfig := .Values.services }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $value.service.name | quote }}
-  namespace: {{ $value.nameSpace | default $dot.Release.Namespace | quote }}
+  name: {{ $serviceName }}-service
+  namespace: {{ $serviceConfig.nameSpace }}
   labels:
-    app: {{ $value.name | quote }}
-    chart: {{ $dot.Chart.Name | quote }}
-    release: {{ $dot.Release.Name | quote }}
-    heritage: {{ $dot.Release.Service | quote }}
-  {{- if $value.service.annotations }}
-  annotations:
-{{ toYaml $value.service.annotations | indent 4 }}
-  {{- end }}
+    app: {{ $serviceName }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- if $serviceConfig.service.annotations }}
+    annotations:
+      {{- range $key, $value := $serviceConfig.service.annotations }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
 spec:
-  type: {{ $value.service.type }}
-  {{- if eq $value.service.type "LoadBalancer" }}
-  {{- if $value.service.loadBalancerIP }}
-  loadBalancerIP: {{ $value.service.loadBalancerIP }}
-  {{- end }}
-  {{- if $value.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-{{ toYaml $value.service.loadBalancerSourceRanges | indent 4 }}
-  {{- end }}
-  {{- end }}
+  type: {{ $serviceConfig.service.type }}
   ports:
-    - port: {{ $value.service.externalPort }}
-      targetPort: {{ $value.service.internalPort }}
+    - port: {{ $serviceConfig.service.externalPort }}
+      targetPort: {{ $serviceConfig.service.internalPort }}
       protocol: TCP
       name: http
-      {{- if (and (eq $value.service.type "NodePort") $value.service.nodePort) }}
-      nodePort: {{ $value.service.nodePort }}
-      {{- end }}
   selector:
-    app: {{ $value.name | quote }}
-    release: {{ $dot.Release.Name | quote }}
-  {{- if $value.service.externalIPs }}
-  externalIPs:
-{{ toYaml $value.service.externalIPs | indent 4 }}
-  {{- end }}
-  {{- if $value.service.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ $value.service.externalTrafficPolicy }}
-  {{- end }}
-  {{- if $value.service.sessionAffinity }}
-  sessionAffinity: {{ $value.service.sessionAffinity }}
-  {{- if $value.service.sessionAffinityConfig }}
-  sessionAffinityConfig:
-{{ toYaml $value.service.sessionAffinityConfig | indent 4 }}
-  {{- end }}
-  {{- end }}
-{{- end }}
+    app: {{ $serviceName }}
+    release: {{ $.Release.Name }}
 {{- end }}

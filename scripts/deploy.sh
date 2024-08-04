@@ -1,11 +1,35 @@
 #!/bin/bash
 
+# Color codes for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Function to prompt for input if variable is not set
+prompt_if_empty() {
+    local var_name="$1"
+    local prompt_message="$2"
+    if [ -z "${!var_name}" ]; then
+        read -p "$prompt_message: " $var_name
+    fi
+}
+
+# Check and prompt for AWS credentials
+prompt_if_empty AWS_ACCESS_KEY_ID "Enter your AWS Access Key ID"
+prompt_if_empty AWS_SECRET_ACCESS_KEY "Enter your AWS Secret Access Key"
+prompt_if_empty AWS_REGION "Enter your AWS Region"
+prompt_if_empty AWS_ACCOUNT_ID "Enter your AWS Account ID"
+
+# Export AWS credentials
+export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION
+
 # Function to log in to AWS ECR
 aws_ecr_login() {
-    echo ">>> Logging into AWS ECR"
+    echo -e "${YELLOW}>>> Logging into AWS ECR${NC}"
     aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
     if [ $? -ne 0 ]; then
-        echo ">>> AWS ECR login failed" >&2
+        echo -e "${RED}>>> AWS ECR login failed${NC}" >&2
         exit 1
     fi
 }
@@ -16,46 +40,59 @@ build_and_push_image() {
     local image_name="nestjs_${service_name}:latest"
     local ecr_image_uri="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/${service_name}:latest"
 
-    echo ">>> Building ${image_name}"
-    docker build -t "$image_name" -f "${service_name}/ci/Dockerfile" "$service_name"
+    echo -e "${YELLOW}>>> Building ${image_name}${NC}"
+    docker build -t "$image_name" -f "${service_name}/Dockerfile" "$service_name"
     if [ $? -ne 0 ]; then
-        echo ">>> Failed to build image ${image_name}" >&2
-        exit 1
+        echo -e "${RED}>>> Failed to build image ${image_name}${NC}" >&2
+        return 1
     fi
 
-    echo ">>> Tagging ${image_name}"
+    echo -e "${YELLOW}>>> Tagging ${image_name}${NC}"
     docker tag "$image_name" "$ecr_image_uri"
 
-    echo ">>> Pushing ${image_name}"
+    echo -e "${YELLOW}>>> Pushing ${image_name}${NC}"
     docker push "$ecr_image_uri"
     if [ $? -ne 0 ]; then
-        echo ">>> Failed to push image ${image_name}" >&2
-        exit 1
+        echo -e "${RED}>>> Failed to push image ${image_name}${NC}" >&2
+        return 1
     fi
 
-    echo ">>> Deployment completed for ${service_name}"
+    echo -e "${GREEN}>>> Deployment completed for ${service_name}${NC}"
 }
 
-# Prompt the user to select a service
-printf "Please select a service:\n"
-select d in */; do
-    test -n "$d" && break
-    echo ">>> Invalid Selection"
+# Get list of services
+services=($(ls -d */ | cut -f1 -d'/'))
+
+# Remove 'fluent-bit' from the list if it exists
+services=(${services[@]/fluent-bit})
+
+# Prompt the user to select services
+echo "Please select services to deploy (space-separated numbers, or 'all'):"
+select service in "${services[@]}" "all"; do
+    if [[ "$service" == "all" ]]; then
+        selected_services=("${services[@]}")
+        break
+    elif [[ -n "$service" ]]; then
+        selected_services+=("$service")
+    fi
+    if [[ "${#selected_services[@]}" -eq 0 ]]; then
+        echo "No valid selection. Please try again."
+    else
+        break
+    fi
 done
 
-service_name="${d%/}"
+# Log in to AWS ECR
+aws_ecr_login
 
-# Check if the selected service is 'fluent-bit'
-if [ "$service_name" == 'fluent-bit' ]; then
-    echo ">>> Service fluent-bit is not allowed for deployment"
-    exit 1
-fi
+# Deploy selected services
+for service in "${selected_services[@]}"; do
+    if [ ! -e "${service}/Dockerfile" ]; then
+        echo -e "${RED}>>> Dockerfile not found for service ${service}${NC}" >&2
+        continue
+    fi
+    echo -e "${YELLOW}>>> Deploying service ${service}...${NC}"
+    build_and_push_image "$service"
+done
 
-# Check if Dockerfile exists for the selected service
-if [ ! -e "${service_name}/Dockerfile" ]; then
-    echo ">>> Dockerfile not found for service ${service_name}" >&2
-    exit 1
-fi
-
-echo ">>> Deploying service ${service_name}..."
-aws_ecr_login && build_and_push_image "$service_name"
+echo -e "${GREEN}>>> All selected services have been processed${NC}"

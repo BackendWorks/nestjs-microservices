@@ -1,0 +1,36 @@
+{{- range $serviceName, $serviceConfig := .Values.services }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $serviceName }}-config
+  namespace: {{ $serviceConfig.nameSpace }}
+  labels:
+    app: "{{ $serviceName }}"
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}"
+    release: "{{ $.Release.Name }}"
+    heritage: "{{ $.Release.Service }}"
+data:
+  APP_NAME: "{{ $serviceConfig.env.APP_NAME }}"
+  APP_ENV: "{{ $serviceConfig.env.APP_ENV }}"
+  HTTP_ENABLE: "{{ $serviceConfig.env.HTTP_ENABLE }}"
+  HTTP_HOST: "{{ $serviceConfig.env.HTTP_HOST }}"
+  HTTP_PORT: "{{ $serviceConfig.env.HTTP_PORT }}"
+  HTTP_VERSIONING_ENABLE: "{{ $serviceConfig.env.HTTP_VERSIONING_ENABLE }}"
+  HTTP_VERSION: "{{ $serviceConfig.env.HTTP_VERSION }}"
+  RABBITMQ_URL: "{{ $serviceConfig.env.RABBITMQ_URL }}"
+  RABBITMQ_QUEUE: "{{ $serviceConfig.env.RABBITMQ_QUEUE }}"
+  DATABASE_URL: "{{ $serviceConfig.env.DATABASE_URL }}"
+  {{- if $serviceConfig.env.AWS_S3_REGION }}
+  AWS_S3_REGION: "{{ $serviceConfig.env.AWS_S3_REGION }}"
+  {{- end }}
+  {{- if $serviceConfig.env.AWS_S3_BUCKET }}
+  AWS_S3_BUCKET: "{{ $serviceConfig.env.AWS_S3_BUCKET }}"
+  {{- end }}
+  {{- if $serviceConfig.env.AWS_SES_REGION }}
+  AWS_SES_REGION: "{{ $serviceConfig.env.AWS_SES_REGION }}"
+  {{- end }}
+  {{- if $serviceConfig.env.AWS_SES_SOURCE_EMAIL }}
+  AWS_SES_SOURCE_EMAIL: "{{ $serviceConfig.env.AWS_SES_SOURCE_EMAIL }}"
+  {{- end }}
+{{- end }}

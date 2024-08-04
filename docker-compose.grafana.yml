@@ -1,29 +1,35 @@
-version: "3.8"
-
 services:
   fluent-bit:
-    environment:
-      - LOG_LEVEL=debug
-      - LOKI_URL=http://loki:3100/loki/api/v1/push
     build:
       context: ./fluent-bit
       dockerfile: Dockerfile
     ports:
       - "24224:24224"
       - "24224:24224/udp"
+    environment:
+      - LOG_LEVEL=debug
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+    depends_on:
+      - loki
+    restart: unless-stopped
     networks:
       - backend
-    restart: unless-stopped
 
   loki:
-    image: grafana/loki:latest
-    expose:
-      - "3100"
+    image: grafana/loki:2.5.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
     networks:
       - backend
-    volumes:
-      - loki_data:/data
-    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -35,25 +41,35 @@ services:
       - GF_RENDERING_SERVER_URL=http://renderer:8081/render
       - GF_RENDERING_CALLBACK_URL=http://grafana:3000/
       - GF_LOG_FILTERS=rendering:debug
-    networks:
-      - backend
+    depends_on:
+      - loki
+      - renderer
     volumes:
       - grafana_data:/var/lib/grafana
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
+    networks:
+      - backend
 
   renderer:
     image: grafana/grafana-image-renderer:latest
-    expose:
-      - "8081"
+    ports:
+      - "8081:8081"
     environment:
       - ENABLE_METRICS=true
+    restart: unless-stopped
     networks:
       - backend
-    restart: unless-stopped
 
 networks:
   backend:
-    driver: bridge
+    name: backend
+    external: true
 
 volumes:
   loki_data:

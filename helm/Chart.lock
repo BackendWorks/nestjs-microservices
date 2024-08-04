@@ -1,9 +1,12 @@
 dependencies:
 - name: kong
   repository: https://charts.konghq.com
-  version: 2.23.0
+  version: 2.19.0
 - name: loki-stack
   repository: https://grafana.github.io/helm-charts
   version: 2.9.10
-digest: sha256:25f36cf6bfaddd96613dda068ecd8ffc82a026ee17a079ecc21e4c1ce8f3be1d
-generated: "2023-07-05T12:43:46.289217745+05:30"
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  version: 1.16.0
+digest: sha256:1d5fea7eb95ce9531d32eccd7293f73536361896fb6a1e7402fd056c8c9739ec
+generated: "2024-08-04T15:34:26.786233+05:30"

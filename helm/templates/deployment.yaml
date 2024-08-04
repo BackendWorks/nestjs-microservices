@@ -1,76 +1,51 @@
-{{- $dot := . -}}
-{{- range $value := .Values.services }}
+{{- range $serviceName, $serviceConfig := .Values.services }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $value.name | quote }}
-  namespace: {{ $value.nameSpace | default $dot.Release.Namespace | quote }}
+  name: {{ $serviceName }}
+  namespace: {{ $serviceConfig.nameSpace }}
   labels:
-    app: {{ $value.name | quote }}
-    chart: {{ $dot.Chart.Name | quote }}
-    release: {{ $dot.Release.Name | quote }}
-    heritage: {{ $dot.Release.Service | quote }}
+    app: "{{ $serviceName }}"
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}"
+    release: "{{ $.Release.Name }}"
+    heritage: "{{ $.Release.Service }}"
 spec:
-  replicas: {{ $value.replicaCount }}
+  replicas: {{ $serviceConfig.replicaCount }}
   selector:
     matchLabels:
-      app: {{ $value.name | quote }}
-      release: {{ $dot.Release.Name | quote }}
+      app: "{{ $serviceName }}"
+      release: "{{ $.Release.Name }}"
   template:
     metadata:
       labels:
-        app: {{ $value.name | quote }}
-        release: {{ $dot.Release.Name | quote }}
-      {{- if $value.podAnnotations }}
+        app: "{{ $serviceName }}"
+        release: "{{ $.Release.Name }}"
       annotations:
-{{ toYaml $value.podAnnotations | indent 8 }}
-      {{- end }}
+        {{- range $key, $value := $serviceConfig.podAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
     spec:
-      {{- with $value.imagePullSecrets }}
-      imagePullSecrets:
-{{ toYaml . | indent 8 }}
-      {{- end }}
       containers:
-        - name: {{ $value.name | quote }}
-          image: "{{ $value.image.repository }}:{{ $value.image.tag | default $dot.Chart.AppVersion }}"
-          imagePullPolicy: {{ $value.image.pullPolicy }}
+        - name: {{ $serviceName }}
+          image: "{{ $serviceConfig.image.repository }}:{{ $serviceConfig.image.tag }}"
+          imagePullPolicy: {{ $serviceConfig.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: {{ $value.service.internalPort }}
-              protocol: TCP
+            - containerPort: {{ $serviceConfig.service.internalPort }}
           env:
-            {{- range $value.env }}
-            - name: {{ .key }}
-              value: {{ .value | quote }}
+            {{- range $key, $value := $serviceConfig.env }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
             {{- end }}
-          {{- if $value.envFrom }}
-          envFrom:
-{{ toYaml $value.envFrom | indent 12 }}
-          {{- end }}
-          {{- if $value.resources }}
           resources:
-{{ toYaml $value.resources | indent 12 }}
-          {{- end }}
-          {{- if $value.livenessProbe }}
+            {{- toYaml $serviceConfig.resources | nindent 12 }}
           livenessProbe:
-{{ toYaml $value.livenessProbe | indent 12 }}
-          {{- end }}
-          {{- if $value.readinessProbe }}
+            httpGet:
+              path: /api/health
+              port: http
           readinessProbe:
-{{ toYaml $value.readinessProbe | indent 12 }}
-          {{- end }}
-      {{- with $value.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
-      {{- end }}
-      {{- with $value.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
-      {{- end }}
-      {{- with $value.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
-      {{- end }}
-      restartPolicy: {{ $value.deployment.restartPolicy | default "Always" }}
+            httpGet:
+              path: /api/health
+              port: http
+      restartPolicy: {{ $serviceConfig.deployment.restartPolicy }}
 {{- end }}

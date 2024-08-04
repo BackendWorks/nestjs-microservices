@@ -5,22 +5,9 @@ global:
 # Kong API Gateway configuration
 kong:
   name: backendworks-ingress
-  env:
-    database: "off"
   ingressController:
     enabled: true
     ingressClass: kong
-  admin:
-    tls:
-      parameters: []
-  ingressAnnotations:
-    # Add any additional annotations here
-    # konghq.com/protocols: "https"
-  tls:
-    []
-    # - hosts:
-    #     - your-domain.com
-    #   secretName: your-tls-secret
   rateLimiting:
     perMinute: 60
   paths:
@@ -43,7 +30,7 @@ kong:
 
 # Microservices configuration
 services:
-  - name: auth
+  auth-service:
     nameSpace: default
     replicaCount: 1
     image:
@@ -57,34 +44,20 @@ services:
     deployment:
       restartPolicy: Always
     env:
-      - key: APP_NAME
-        value: "@backendworks/auth"
-      - key: APP_ENV
-        value: development
-      - key: HTTP_ENABLE
-        value: "true"
-      - key: HTTP_HOST
-        value: "0.0.0.0"
-      - key: HTTP_PORT
-        value: "9001"
-      - key: HTTP_VERSIONING_ENABLE
-        value: "true"
-      - key: HTTP_VERSION
-        value: "1"
-      - key: ACCESS_TOKEN_SECRET_KEY
-        value: "testme"
-      - key: ACCESS_TOKEN_EXPIRED
-        value: "1d"
-      - key: REFRESH_TOKEN_SECRET_KEY
-        value: "testme"
-      - key: REFRESH_TOKEN_EXPIRED
-        value: "7d"
-      - key: RABBITMQ_URL
-        value: "amqp://admin:master123@rabbitmq:5672"
-      - key: RABBITMQ_AUTH_QUEUE
-        value: "auth_queue"
-      - key: DATABASE_URL
-        value: "postgresql://admin:master123@postgres:5432/auth_db?schema=public"
+      APP_NAME: "@backendworks/auth"
+      APP_ENV: "development"
+      HTTP_ENABLE: "true"
+      HTTP_HOST: "0.0.0.0"
+      HTTP_PORT: "9001"
+      HTTP_VERSIONING_ENABLE: "true"
+      HTTP_VERSION: "1"
+      ACCESS_TOKEN_SECRET_KEY: "testme"
+      ACCESS_TOKEN_EXPIRED: "1d"
+      REFRESH_TOKEN_SECRET_KEY: "testme"
+      REFRESH_TOKEN_EXPIRED: "7d"
+      RABBITMQ_URL: "amqp://admin:master123@rabbitmq:5672"
+      RABBITMQ_AUTH_QUEUE: "auth_queue"
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/auth_db?schema=public"
     service:
       name: auth-service
       type: ClusterIP
@@ -109,7 +82,7 @@ services:
         path: /api/health
         port: http
 
-  - name: files
+  files-service:
     nameSpace: default
     replicaCount: 1
     image:
@@ -119,36 +92,21 @@ services:
     deployment:
       restartPolicy: Always
     env:
-      - key: APP_NAME
-        value: "@backendworks/files"
-      - key: APP_ENV
-        value: development
-      - key: HTTP_ENABLE
-        value: "true"
-      - key: HTTP_HOST
-        value: "0.0.0.0"
-      - key: HTTP_PORT
-        value: "9003"
-      - key: HTTP_VERSIONING_ENABLE
-        value: "true"
-      - key: HTTP_VERSION
-        value: "1"
-      - key: RABBITMQ_URL
-        value: "amqp://admin:master123@rabbitmq:5672"
-      - key: RABBITMQ_FILES_QUEUE
-        value: "files_queue"
-      - key: RABBITMQ_AUTH_QUEUE
-        value: "auth_queue"
-      - key: DATABASE_URL
-        value: "mongodb://mongodb:27017/files"
-      - key: AWS_S3_REGION
-        value: ""
-      - key: AWS_S3_ACCESS_KEY
-        value: ""
-      - key: AWS_S3_SECRET_KEY
-        value: ""
-      - key: AWS_S3_BUCKET
-        value: ""
+      APP_NAME: "@backendworks/files"
+      APP_ENV: "development"
+      HTTP_ENABLE: "true"
+      HTTP_HOST: "0.0.0.0"
+      HTTP_PORT: "9003"
+      HTTP_VERSIONING_ENABLE: "true"
+      HTTP_VERSION: "1"
+      RABBITMQ_URL: "amqp://admin:master123@rabbitmq:5672"
+      RABBITMQ_FILES_QUEUE: "files_queue"
+      RABBITMQ_AUTH_QUEUE: "auth_queue"
+      DATABASE_URL: "mongodb://mongodb:27017/files"
+      AWS_S3_REGION: "ap-south-1"
+      AWS_S3_ACCESS_KEY: "key"
+      AWS_S3_SECRET_KEY: "secret"
+      AWS_S3_BUCKET: "bucket"
     service:
       name: files-service
       type: ClusterIP
@@ -170,7 +128,7 @@ services:
         path: /api/health
         port: http
 
-  - name: notification
+  notification-service:
     nameSpace: default
     replicaCount: 1
     image:
@@ -180,36 +138,21 @@ services:
     deployment:
       restartPolicy: Always
     env:
-      - key: APP_NAME
-        value: "@backendworks/notification"
-      - key: APP_ENV
-        value: development
-      - key: HTTP_ENABLE
-        value: "true"
-      - key: HTTP_HOST
-        value: "0.0.0.0"
-      - key: HTTP_PORT
-        value: "9004"
-      - key: HTTP_VERSIONING_ENABLE
-        value: "true"
-      - key: HTTP_VERSION
-        value: "1"
-      - key: RABBITMQ_URL
-        value: "amqp://admin:master123@rabbitmq:5672"
-      - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: "notification_queue"
-      - key: RABBITMQ_AUTH_QUEUE
-        value: "auth_queue"
-      - key: DATABASE_URL
-        value: "mongodb://mongodb:27017/notifications"
-      - key: AWS_SES_REGION
-        value: ""
-      - key: AWS_SES_ACCESS_KEY
-        value: ""
-      - key: AWS_SES_SECRET_KEY
-        value: ""
-      - key: AWS_SES_SOURCE_EMAIL
-        value: ""
+      APP_NAME: "@backendworks/notification"
+      APP_ENV: "development"
+      HTTP_ENABLE: "true"
+      HTTP_HOST: "0.0.0.0"
+      HTTP_PORT: "9004"
+      HTTP_VERSIONING_ENABLE: "true"
+      HTTP_VERSION: "1"
+      RABBITMQ_URL: "amqp://admin:master123@rabbitmq:5672"
+      RABBITMQ_NOTIFICATION_QUEUE: "notification_queue"
+      RABBITMQ_AUTH_QUEUE: "auth_queue"
+      DATABASE_URL: "mongodb://mongodb:27017/notifications"
+      AWS_SES_REGION: "region"
+      AWS_SES_ACCESS_KEY: "key"
+      AWS_SES_SECRET_KEY: "secret"
+      AWS_SES_SOURCE_EMAIL: "test@email.com"
     service:
       name: notification-service
       type: ClusterIP
@@ -231,7 +174,7 @@ services:
         path: /api/health
         port: http
 
-  - name: post
+  post-service:
     nameSpace: default
     replicaCount: 1
     image:
@@ -241,28 +184,17 @@ services:
     deployment:
       restartPolicy: Always
     env:
-      - key: APP_NAME
-        value: "@backendworks/post"
-      - key: APP_ENV
-        value: development
-      - key: HTTP_ENABLE
-        value: "true"
-      - key: HTTP_HOST
-        value: "0.0.0.0"
-      - key: HTTP_PORT
-        value: "9002"
-      - key: HTTP_VERSIONING_ENABLE
-        value: "true"
-      - key: HTTP_VERSION
-        value: "1"
-      - key: RABBITMQ_URL
-        value: "amqp://admin:master123@rabbitmq:5672"
-      - key: RABBITMQ_AUTH_QUEUE
-        value: "auth_queue"
-      - key: RABBITMQ_POST_QUEUE
-        value: "post_queue"
-      - key: DATABASE_URL
-        value: "postgresql://admin:master123@postgres:5432/nestjs_post_db?schema=public"
+      APP_NAME: "@backendworks/post"
+      APP_ENV: "development"
+      HTTP_ENABLE: "true"
+      HTTP_HOST: "0.0.0.0"
+      HTTP_PORT: "9002"
+      HTTP_VERSIONING_ENABLE: "true"
+      HTTP_VERSION: "1"
+      RABBITMQ_URL: "amqp://admin:master123@rabbitmq:5672"
+      RABBITMQ_AUTH_QUEUE: "auth_queue"
+      RABBITMQ_POST_QUEUE: "post_queue"
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/post_db?schema=public"
     service:
       name: post-service
       type: ClusterIP
@@ -314,8 +246,10 @@ loki-stack:
     replicas: 1
     service:
       type: NodePort
-      port: 80
-      targetPort: 3000
+      ports:
+        - port: 80
+          targetPort: 3000
+          nodePort: 32000
     adminUser: admin
     adminPassword: password
     persistence:
@@ -327,6 +261,7 @@ loki-stack:
 
   promtail:
     enabled: false
+
   fluent-bit:
     enabled: true
     config:
@@ -355,5 +290,6 @@ loki-stack:
             Labels job=fluentbit
             Label_Keys $kubernetes['pod_name'],$kubernetes['namespace_name']
             Line_Format json
+
   prometheus:
     enabled: false

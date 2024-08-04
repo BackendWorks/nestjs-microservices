@@ -4,40 +4,25 @@ kind: Ingress
 metadata:
   name: {{ .Values.kong.name }}
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.kong.ingressController.ingressClass }}
     konghq.com/strip-path: "true"
-    {{- if .Values.kong.ingressAnnotations }}
-    {{- range $key, $value := .Values.kong.ingressAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    {{- end }}
   labels:
     app: {{ .Chart.Name }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
+  ingressClassName: {{ .Values.kong.ingressController.ingressClass }}
   rules:
-  {{- range $value := .Values.kong.paths }}
+  {{- range .Values.kong.paths }}
   - http:
       paths:
-      - path: {{ $value.path }}
-        pathType: {{ $value.pathType }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
         backend:
           service:
-            name: {{ $value.name }}
+            name: {{ .name }}
             port:
-              number: {{ $value.port }}
-  {{- end }}
-  {{- if .Values.kong.tls }}
-  tls:
-    {{- range .Values.kong.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName | quote }}
-    {{- end }}
+              number: {{ .port }}
   {{- end }}
 ---
 apiVersion: configuration.konghq.com/v1

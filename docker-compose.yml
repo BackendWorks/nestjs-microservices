@@ -1,43 +1,45 @@
-version: "3.8"
-
 services:
   auth-service:
-    hostname: auth
     build:
       context: ./auth
       dockerfile: Dockerfile
-    restart: on-failure
     ports:
       - "9001:9001"
     env_file:
       - ./auth/.env.docker
-    networks:
-      - backend
     volumes:
       - ./auth:/app/auth
       - /app/auth/node_modules
+    restart: on-failure
+    networks:
+      - backend
     logging:
       driver: fluentd
       options:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: auth-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   post-service:
-    hostname: post
     build:
       context: ./post
       dockerfile: Dockerfile
-    restart: on-failure
     ports:
       - "9002:9002"
     env_file:
       - ./post/.env.docker
-    networks:
-      - backend
     volumes:
       - ./post:/app/post
       - /app/post/node_modules
+    restart: on-failure
+    networks:
+      - backend
     logging:
       driver: fluentd
       options:
@@ -46,20 +48,19 @@ services:
         tag: post-service
 
   files-service:
-    hostname: files
     build:
       context: ./files
       dockerfile: Dockerfile
-    restart: on-failure
     ports:
       - "9003:9003"
     env_file:
       - ./files/.env.docker
-    networks:
-      - backend
     volumes:
       - ./files:/app/files
       - /app/files/node_modules
+    restart: on-failure
+    networks:
+      - backend
     logging:
       driver: fluentd
       options:
@@ -68,20 +69,19 @@ services:
         tag: files-service
 
   notification-service:
-    hostname: notification
     build:
       context: ./notification
       dockerfile: Dockerfile
-    restart: on-failure
     ports:
       - "9004:9004"
     env_file:
       - ./notification/.env.docker
-    networks:
-      - backend
     volumes:
       - ./notification:/app/notification
       - /app/notification/node_modules
+    restart: on-failure
+    networks:
+      - backend
     logging:
       driver: fluentd
       options:
@@ -93,12 +93,12 @@ services:
     build:
       context: ./kong
       dockerfile: Dockerfile
-    restart: unless-stopped
     ports:
       - "8000:8000"
       - "8443:8443"
       - "8001:8001"
       - "8444:8444"
+    restart: unless-stopped
     networks:
       - backend
     logging:
@@ -107,7 +107,13 @@ services:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: kong-gateway
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
 networks:
   backend:
-    driver: bridge
+    name: backend
+    external: true

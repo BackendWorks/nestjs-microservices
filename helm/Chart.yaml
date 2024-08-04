@@ -1,13 +1,21 @@
 apiVersion: v2
 name: backendworks
-description: A Helm chart for NestJS microservices
-
+description: A Helm chart for BackendWorks NestJS microservices architecture
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
+kubeVersion: ">=1.18.0-0"
 
-# Add kubeVersion constraint if you have specific Kubernetes version requirements
-# kubeVersion: ">=1.16.0-0"
+keywords:
+  - nestjs
+  - microservices
+  - backend
+  - typescript
+  - nodejs
+
+home: https://github.com/backendworks
+sources:
+  - https://github.com/backendworks
 
 dependencies:
   - name: kong
@@ -19,9 +27,14 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
     condition: loki-stack.enabled
   - name: common
-    version: 1.x.x
+    version: 1.16.0
     repository: https://charts.bitnami.com/bitnami
 
 maintainers:
   - name: Harsh Makwana
     email: harsh.make1998@gmail.com
+    url: https://github.com/hmake98
+
+annotations:
+  category: Application
+  licenses: MIT
