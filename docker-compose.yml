@@ -1,45 +1,74 @@
 services:
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_LOG_LEVEL: debug
+    volumes:
+      - ./kong/config.yml:/usr/local/kong/declarative/kong.yml
+    ports:
+      - "8000:8000"  # Main API Gateway port
+      - "8443:8443"  # SSL port
+      - "8001:8001"  # Admin API port
+    depends_on:
+      - auth-service
+      - post-service
+    networks:
+      - backendworks
+    restart: unless-stopped
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async: "true"
+        fluentd-address: localhost:24224
+        tag: kong-gateway
+
   auth-service:
     build:
       context: ./auth
       dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=auth-service
     ports:
       - "9001:9001"
     env_file:
       - ./auth/.env.docker
     volumes:
-      - ./auth:/app/auth
-      - /app/auth/node_modules
+      - ./auth:/app
+      - /app/node_modules
     restart: on-failure
     networks:
-      - backend
+      - backendworks
     logging:
       driver: fluentd
       options:
         fluentd-async: "true"
         fluentd-address: localhost:24224
         tag: auth-service
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9001/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
 
   post-service:
     build:
       context: ./post
       dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=post-service
     ports:
       - "9002:9002"
     env_file:
       - ./post/.env.docker
     volumes:
-      - ./post:/app/post
-      - /app/post/node_modules
+      - ./post:/app
+      - /app/node_modules
     restart: on-failure
     networks:
-      - backend
+      - backendworks
     logging:
       driver: fluentd
       options:
@@ -47,73 +76,6 @@ services:
         fluentd-address: localhost:24224
         tag: post-service
 
-  files-service:
-    build:
-      context: ./files
-      dockerfile: Dockerfile
-    ports:
-      - "9003:9003"
-    env_file:
-      - ./files/.env.docker
-    volumes:
-      - ./files:/app/files
-      - /app/files/node_modules
-    restart: on-failure
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: files-service
-
-  notification-service:
-    build:
-      context: ./notification
-      dockerfile: Dockerfile
-    ports:
-      - "9004:9004"
-    env_file:
-      - ./notification/.env.docker
-    volumes:
-      - ./notification:/app/notification
-      - /app/notification/node_modules
-    restart: on-failure
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: notification-service
-
-  kong:
-    build:
-      context: ./kong
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-      - "8443:8443"
-      - "8001:8001"
-      - "8444:8444"
-    restart: unless-stopped
-    networks:
-      - backend
-    logging:
-      driver: fluentd
-      options:
-        fluentd-async: "true"
-        fluentd-address: localhost:24224
-        tag: kong-gateway
-    healthcheck:
-      test: ["CMD", "kong", "health"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-
 networks:
-  backend:
-    name: backend
+  backendworks:
     external: true

@@ -13,7 +13,7 @@ services:
       - loki
     restart: unless-stopped
     networks:
-      - backend
+      - backendworks
 
   loki:
     image: grafana/loki:2.5.0
@@ -29,7 +29,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - backend
+      - backendworks
 
   grafana:
     image: grafana/grafana:latest
@@ -54,7 +54,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - backend
+      - backendworks
 
   renderer:
     image: grafana/grafana-image-renderer:latest
@@ -64,11 +64,10 @@ services:
       - ENABLE_METRICS=true
     restart: unless-stopped
     networks:
-      - backend
+      - backendworks
 
 networks:
-  backend:
-    name: backend
+  backendworks:
     external: true
 
 volumes:

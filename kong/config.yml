@@ -1,0 +1,61 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: auth-service
+    url: http://auth-service:9001
+    routes:
+      - name: auth-routes
+        paths:
+          - /auth/
+        path_handling: v1
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+
+  - name: post-service
+    url: http://post-service:9002
+    routes:
+      - name: post-routes
+        paths:
+          - /post/
+        path_handling: v1
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Origin
+        - Authorization
+        - Content-Type
+      exposed_headers:
+        - Content-Length
+      max_age: 43200  
