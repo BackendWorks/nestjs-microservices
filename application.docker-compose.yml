@@ -27,7 +27,7 @@ services:
       driver: fluentd
       options:
         fluentd-async: "true"
-        fluentd-address: localhost:24224
+        fluentd-address: vector:24224  
         tag: kong-gateway
 
   auth-service:
@@ -50,7 +50,7 @@ services:
       driver: fluentd
       options:
         fluentd-async: "true"
-        fluentd-address: localhost:24224
+        fluentd-address: vector:24224  
         tag: auth-service
 
   post-service:
@@ -73,7 +73,7 @@ services:
       driver: fluentd
       options:
         fluentd-async: "true"
-        fluentd-address: localhost:24224
+        fluentd-address: vector:24224 
         tag: post-service
 
 networks:

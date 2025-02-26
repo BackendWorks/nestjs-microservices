@@ -14,8 +14,6 @@ A clear and concise description of what the bug is.
 List the microservice(s) affected by this bug:
 - [ ] Auth Service
 - [ ] Post Service
-- [ ] Files Service
-- [ ] Notification Service
 - [ ] API Gateway
 - [ ] Other (please specify)
 

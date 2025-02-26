@@ -1,23 +1,4 @@
 services:
-  postgres:
-    image: postgres:latest
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: master123
-      POSTGRES_DB: postgres
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    networks:
-      - backendworks
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     restart: unless-stopped
@@ -88,34 +69,12 @@ services:
       zookeeper:
         condition: service_healthy
 
-  redis:
-    image: redis:latest
-    restart: always
-    ports:
-      - "6379:6379"
-    command: redis-server --save 20 1 --loglevel warning
-    volumes:
-      - redis_data:/data
-    networks:
-      backendworks:
-        aliases:
-          - redis
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 networks:
   backendworks:
-    name: backendworks
+    external: true
 
 volumes:
-  pg_data:
-    driver: local
   zookeeper_data:
     driver: local
   kafka_data:
-    driver: local
-  redis_data:
     driver: local

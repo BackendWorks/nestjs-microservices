@@ -1,14 +1,14 @@
 services:
-  fluent-bit:
-    build:
-      context: ./fluent-bit
-      dockerfile: Dockerfile
+  vector:
+    image: timberio/vector:0.29.1-alpine
     ports:
       - "24224:24224"
       - "24224:24224/udp"
     environment:
-      - LOG_LEVEL=debug
-      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - VECTOR_LOG=debug
+    volumes:
+      - ./vector/vector.toml:/etc/vector/vector.toml
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
     depends_on:
       - loki
     restart: unless-stopped
@@ -16,7 +16,7 @@ services:
       - backendworks
 
   loki:
-    image: grafana/loki:2.5.0
+    image: grafana/loki:latest
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
@@ -38,30 +38,15 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=master123
-      - GF_RENDERING_SERVER_URL=http://renderer:8081/render
-      - GF_RENDERING_CALLBACK_URL=http://grafana:3000/
-      - GF_LOG_FILTERS=rendering:debug
     depends_on:
       - loki
-      - renderer
     volumes:
       - grafana_data:/var/lib/grafana
     healthcheck:
-      test:
-        ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3000/api/health"]
+      test: ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3000/api/health"]
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-    networks:
-      - backendworks
-
-  renderer:
-    image: grafana/grafana-image-renderer:latest
-    ports:
-      - "8081:8081"
-    environment:
-      - ENABLE_METRICS=true
     restart: unless-stopped
     networks:
       - backendworks
@@ -72,4 +57,6 @@ networks:
 
 volumes:
   loki_data:
+    driver: local
   grafana_data:
+    driver: local
