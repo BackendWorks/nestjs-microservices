@@ -1,0 +1,60 @@
+services:
+  auth-service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+    env_file:
+      - ./auth/.env.docker
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:9001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  postgres:
+    image: postgres:latest
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: master123
+      POSTGRES_DB: postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:latest
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  pg_data:
+  redis_data:

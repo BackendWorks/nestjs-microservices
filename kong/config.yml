@@ -1,4 +1,4 @@
-_format_version: "2.1"
+_format_version: "3.0"
 _transform: true
 
 services:
@@ -7,8 +7,7 @@ services:
     routes:
       - name: auth-routes
         paths:
-          - /auth/
-        path_handling: v1
+          - /auth
         strip_path: true
         preserve_host: false
         protocols:
@@ -26,8 +25,7 @@ services:
     routes:
       - name: post-routes
         paths:
-          - /post/
-        path_handling: v1
+          - /post
         strip_path: true
         preserve_host: false
         protocols:
@@ -39,23 +37,3 @@ services:
           - PUT
           - PATCH
           - DELETE
-
-plugins:
-  - name: cors
-    config:
-      origins:
-        - "*"
-      methods:
-        - GET
-        - POST
-        - PUT
-        - PATCH
-        - DELETE
-        - OPTIONS
-      headers:
-        - Origin
-        - Authorization
-        - Content-Type
-      exposed_headers:
-        - Content-Length
-      max_age: 43200  
