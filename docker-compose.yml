@@ -1,25 +1,94 @@
 services:
+  # Kong API Gateway
+  kong:
+    image: kong:latest
+    container_name: bw-kong
+    restart: unless-stopped
+    ports:
+      - "8000:8000"    # HTTP API
+      - "8443:8443"    # HTTPS API
+      - "8001:8001"    # Admin API
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    volumes:
+      - ./kong/config.yml:/var/lib/kong/kong.yml:ro
+    networks:
+      - bw-network
+    depends_on:
+      - auth-service
+      - post-service
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Authentication Service
   auth-service:
     build:
       context: ./auth
       dockerfile: Dockerfile
+    container_name: bw-auth-service
+    restart: unless-stopped
     ports:
-      - "9001:9001"
+      - "9001:9001"    # HTTP API
+      - "50051:50051"  # gRPC
     env_file:
       - ./auth/.env.docker
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
-      - app-network
+      - bw-network
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://localhost:9001/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9001/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
+      start_period: 40s
+
+  # Post Service
+  post-service:
+    build:
+      context: ./post
+      dockerfile: Dockerfile
+    container_name: bw-post-service
+    restart: unless-stopped
+    ports:
+      - "9002:9002"    # HTTP API
+      - "50052:50052"  # gRPC
+    env_file:
+      - ./post/.env.docker
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bw-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9002/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
   postgres:
-    image: postgres:latest
-    hostname: postgres
+    image: postgres:15-alpine
+    container_name: bw-postgres
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
@@ -27,34 +96,37 @@ services:
       POSTGRES_PASSWORD: master123
       POSTGRES_DB: postgres
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - bw-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d postgres -U admin"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Redis Cache
   redis:
-    image: redis:latest
-    hostname: redis
+    image: redis:7-alpine
+    container_name: bw-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     networks:
-      - app-network
+      - bw-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
 networks:
-  app-network:
-    name: app-network
+  bw-network:
     driver: bridge
 
 volumes:
-  pg_data:
+  postgres_data:
   redis_data:
