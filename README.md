@@ -1,6 +1,6 @@
 # NestJS Microservices Architecture
 
-A production-ready microservices architecture built with NestJS, gRPC, PostgreSQL, Redis, and Kong API Gateway. This project demonstrates a scalable, maintainable microservices pattern with proper service communication, authentication, and monitoring.
+A production-ready microservices architecture built with NestJS, gRPC, PostgreSQL, Redis, and Kong API Gateway. This project demonstrates a scalable, maintainable microservices pattern with proper service communication, authentication, rate limiting, and comprehensive monitoring capabilities.
 
 ## 🏗️ Architecture Overview
 
@@ -31,6 +31,7 @@ A production-ready microservices architecture built with NestJS, gRPC, PostgreSQ
 - **gRPC Communication**: High-performance inter-service communication
 - **JWT Authentication**: Secure token-based authentication
 - **Role-based Authorization**: ADMIN and USER role support
+- **Rate Limiting**: Kong-based API rate limiting with configurable thresholds
 - **Soft Delete**: Audit trails for data integrity
 - **Pagination**: Efficient data pagination
 - **Search & Filtering**: Advanced search capabilities
@@ -38,6 +39,7 @@ A production-ready microservices architecture built with NestJS, gRPC, PostgreSQ
 - **API Documentation**: Swagger/OpenAPI documentation
 - **Docker Support**: Containerized deployment
 - **Database Migrations**: Automated schema management
+- **Test Coverage**: Comprehensive unit and integration tests
 
 ## 📋 Prerequisites
 
@@ -129,12 +131,31 @@ docker-compose exec auth-service npm run prisma:migrate
 docker-compose exec post-service npm run prisma:migrate
 ```
 
+### 5. Verify Installation
+```bash
+# Check all services are running
+docker-compose ps
+
+# Test Kong API Gateway
+curl http://localhost:8000/auth  # Should return auth service info
+curl http://localhost:8000/post  # Should return post service info
+
+# Check rate limiting headers
+curl -I http://localhost:8000/auth | grep RateLimit
+
+# Verify health endpoints
+curl http://localhost:9001/health
+curl http://localhost:9002/health
+```
+
 ## 📡 Service Endpoints
 
 ### Kong API Gateway
 - **URL**: `http://localhost:8000`
-- **Auth Service**: `http://localhost:8000/auth`
-- **Post Service**: `http://localhost:8000/post`
+- **Admin API**: `http://localhost:8001`
+- **Auth Service**: `http://localhost:8000/auth` (Rate limit: 100/min, 1000/hour, 10000/day)
+- **Post Service**: `http://localhost:8000/post` (Rate limit: 200/min, 2000/hour, 20000/day)
+- **Global Rate Limit**: 300/min, 3000/hour, 30000/day
 
 ### Direct Service Access
 
@@ -225,10 +246,56 @@ CREATE TABLE posts (
 
 ## 🔧 Configuration
 
-### Kong API Gateway
+### Kong API Gateway Configuration
 - **Port**: 8000 (HTTP), 8443 (HTTPS)
 - **Admin API**: 8001
 - **Configuration**: Declarative configuration in `kong/config.yml`
+- **Rate Limiting**: Configured per service with different thresholds
+  - Auth Service: 100 requests/minute, 1000/hour, 10000/day
+  - Post Service: 200 requests/minute, 2000/hour, 20000/day
+  - Global: 300 requests/minute, 3000/hour, 30000/day
+- **Features**: Load balancing, health checks, request/response transformation
+
+#### Kong Rate Limiting Configuration
+
+The Kong API Gateway is configured with rate limiting plugins to protect against abuse:
+
+```yaml
+# kong/config.yml
+plugins:
+  - name: rate-limiting
+    route: auth-routes
+    config:
+      minute: 100
+      hour: 1000
+      day: 10000
+      policy: local
+      hide_client_headers: false
+      fault_tolerant: true
+
+  - name: rate-limiting
+    route: post-routes
+    config:
+      minute: 200
+      hour: 2000
+      day: 20000
+      policy: local
+      hide_client_headers: false
+      fault_tolerant: true
+```
+
+**Rate Limiting Headers:**
+- `X-RateLimit-Limit-Minute`: Maximum requests per minute
+- `X-RateLimit-Remaining-Minute`: Remaining requests in current minute
+- `RateLimit-Reset`: Seconds until rate limit window resets
+
+**Testing Rate Limits:**
+```bash
+# Test rate limiting
+for i in {1..105}; do curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth; done
+
+# Expected: First 100 requests return 200, subsequent requests return 429
+```
 
 ### Service Communication
 - **gRPC**: High-performance binary protocol for inter-service communication
@@ -291,6 +358,7 @@ docker-compose exec post-service npm run prisma:migrate
 - **Auth Service**: `http://localhost:9001/health`
 - **Post Service**: `http://localhost:9002/health`
 - **Kong Gateway**: `http://localhost:8001/status`
+- **Kong Health Check**: `curl http://localhost:8000/auth` (should return service response)
 
 ### Docker Health Checks
 All services include Docker health checks for container orchestration:
@@ -311,7 +379,8 @@ All services include Docker health checks for container orchestration:
 - **CORS Protection**: Cross-origin request handling
 - **Helmet Security**: Security headers
 - **Input Validation**: Request validation with class-validator
-- **Rate Limiting**: Configurable rate limiting
+- **Rate Limiting**: Kong-based rate limiting with per-service thresholds
+- **API Gateway Security**: Centralized security policies through Kong
 
 ### Infrastructure Security
 - **Network Isolation**: Docker network isolation
@@ -399,11 +468,49 @@ netstat -an | grep 50051
 netstat -an | grep 50052
 ```
 
+#### Kong Gateway Issues
+```bash
+# Check Kong status
+curl http://localhost:8001/status
+
+# Check Kong configuration
+curl http://localhost:8001/services
+curl http://localhost:8001/routes
+curl http://localhost:8001/plugins
+
+# Check rate limiting status
+curl -I http://localhost:8000/auth  # Check headers for rate limit info
+
+# Restart Kong if needed
+docker-compose restart kong
+```
+
 ### Development Tips
 - Use `docker-compose logs -f` to monitor service logs
 - Check health endpoints for service status
 - Use Prisma Studio for database inspection: `npm run prisma:studio`
 - Monitor Kong gateway logs for API routing issues
+- Test rate limiting with the provided script: `./test-rate-limiting.sh`
+
+### Testing the System
+```bash
+# Test all services are running
+curl http://localhost:8000/auth
+curl http://localhost:8000/post
+
+# Test rate limiting
+for i in {1..10}; do curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth; done
+
+# Test health endpoints
+curl http://localhost:9001/health
+curl http://localhost:9002/health
+curl http://localhost:8001/status
+
+# Check service logs
+docker-compose logs auth-service --tail 20
+docker-compose logs post-service --tail 20
+docker-compose logs kong --tail 20
+```
 
 ## 🤝 Contributing
 

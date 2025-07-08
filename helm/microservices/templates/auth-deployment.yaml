@@ -1,0 +1,45 @@
+{{- if .Values.auth.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "microservices.fullname" . }}-auth
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+spec:
+  replicas: {{ .Values.auth.replicas }}
+  selector:
+    matchLabels:
+      {{- include "microservices.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auth
+  template:
+    metadata:
+      labels:
+        {{- include "microservices.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: auth
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: auth
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag }}"
+          imagePullPolicy: {{ .Values.auth.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.auth.service.targetPort }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.auth.grpc.targetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.auth.env | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.auth.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.auth.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.auth.resources | nindent 12 }}
+      restartPolicy: Always
+{{- end }}

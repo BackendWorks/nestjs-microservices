@@ -1,0 +1,37 @@
+{{- if and .Values.postgresql.enabled .Values.postgresql.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "microservices.fullname" . }}-postgresql-pvc
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.persistence.size }}
+  {{- if .Values.postgresql.persistence.storageClass }}
+  storageClassName: {{ .Values.postgresql.persistence.storageClass }}
+  {{- end }}
+---
+{{- end }}
+{{- if and .Values.redis.enabled .Values.redis.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "microservices.fullname" . }}-redis-pvc
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.redis.persistence.size }}
+  {{- if .Values.redis.persistence.storageClass }}
+  storageClassName: {{ .Values.redis.persistence.storageClass }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,49 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "microservices.fullname" . }}-postgresql
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "microservices.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgresql
+  template:
+    metadata:
+      labels:
+        {{- include "microservices.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+          ports:
+            - name: postgresql
+              containerPort: {{ .Values.postgresql.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.postgresql.env | nindent 12 }}
+          {{- if .Values.postgresql.persistence.enabled }}
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.postgresql.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.postgresql.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.postgresql.resources | nindent 12 }}
+      {{- if .Values.postgresql.persistence.enabled }}
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: {{ include "microservices.fullname" . }}-postgresql-pvc
+      {{- end }}
+      restartPolicy: Always
+{{- end }}

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: microservices
+description: A Helm chart for NestJS microservices with Kong API Gateway
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - nestjs
+  - microservices
+  - kong
+  - api-gateway
+home: https://github.com/your-org/nestjs-microservices
+sources:
+  - https://github.com/your-org/nestjs-microservices
+maintainers:
+  - name: Your Name
+    email: your.email@example.com

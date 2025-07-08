@@ -1,0 +1,23 @@
+{{- if .Values.post.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "microservices.fullname" . }}-post
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: post
+spec:
+  type: {{ .Values.post.service.type }}
+  ports:
+    - port: {{ .Values.post.service.port }}
+      targetPort: {{ .Values.post.service.targetPort }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.post.grpc.port }}
+      targetPort: {{ .Values.post.grpc.targetPort }}
+      protocol: TCP
+      name: grpc
+  selector:
+    {{- include "microservices.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: post
+{{- end }}

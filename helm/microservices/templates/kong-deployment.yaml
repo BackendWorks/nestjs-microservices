@@ -1,0 +1,50 @@
+{{- if .Values.kong.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "microservices.fullname" . }}-kong
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kong
+spec:
+  replicas: {{ .Values.kong.replicas }}
+  selector:
+    matchLabels:
+      {{- include "microservices.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: kong
+  template:
+    metadata:
+      labels:
+        {{- include "microservices.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: kong
+    spec:
+      containers:
+        - name: kong
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.kong.image.repository }}:{{ .Values.kong.image.tag }}"
+          imagePullPolicy: {{ .Values.kong.image.pullPolicy }}
+          ports:
+            - name: proxy
+              containerPort: {{ .Values.kong.service.targetPort }}
+              protocol: TCP
+            - name: admin
+              containerPort: {{ .Values.kong.service.adminTargetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.kong.env | nindent 12 }}
+          volumeMounts:
+            - name: kong-config
+              mountPath: /var/lib/kong/kong.yml
+              subPath: kong.yml
+              readOnly: true
+          livenessProbe:
+            {{- toYaml .Values.kong.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.kong.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.kong.resources | nindent 12 }}
+      volumes:
+        - name: kong-config
+          configMap:
+            name: {{ include "microservices.fullname" . }}-kong-config
+      restartPolicy: Always
+{{- end }}

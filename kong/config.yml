@@ -37,3 +37,33 @@ services:
           - PUT
           - PATCH
           - DELETE
+
+plugins:
+  - name: rate-limiting
+    route: auth-routes
+    config:
+      minute: 100
+      hour: 1000
+      day: 10000
+      policy: local
+      hide_client_headers: false
+      fault_tolerant: true
+
+  - name: rate-limiting
+    route: post-routes
+    config:
+      minute: 200
+      hour: 2000
+      day: 20000
+      policy: local
+      hide_client_headers: false
+      fault_tolerant: true
+
+  - name: rate-limiting
+    config:
+      minute: 300
+      hour: 3000
+      day: 30000
+      policy: local
+      hide_client_headers: false
+      fault_tolerant: true

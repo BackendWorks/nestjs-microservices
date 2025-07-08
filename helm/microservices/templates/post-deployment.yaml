@@ -1,0 +1,45 @@
+{{- if .Values.post.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "microservices.fullname" . }}-post
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app.kubernetes.io/component: post
+spec:
+  replicas: {{ .Values.post.replicas }}
+  selector:
+    matchLabels:
+      {{- include "microservices.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: post
+  template:
+    metadata:
+      labels:
+        {{- include "microservices.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: post
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: post
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.post.image.repository }}:{{ .Values.post.image.tag }}"
+          imagePullPolicy: {{ .Values.post.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.post.service.targetPort }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.post.grpc.targetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.post.env | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.post.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.post.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.post.resources | nindent 12 }}
+      restartPolicy: Always
+{{- end }}
