@@ -602,7 +602,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <a href="https://nestjs.com/"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
   <a href="https://grpc.io/"><img src="https://grpc.io/img/logos/grpc-icon-white.png" width="120" alt="gRPC Logo" /></a>
   <a href="https://www.postgresql.org/"><img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="120" alt="PostgreSQL Logo" /></a>
-  <a href="https://redis.io/"><img src="https://redis.io/images/redis-white.png" width="120" alt="Redis Logo" /></a>
+  <a href="https://redis.io/"><img src="https://scontent.famd15-2.fna.fbcdn.net/v/t39.30808-6/436926018_832947402197621_5477005916273337192_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=CQXQELP62P8Q7kNvwG7Kl9K&_nc_oc=Adn081BqyVYgvTp8BdaUormEbTSkBHJ3jogCuLZIJogZXLlP9c5JTRIPPXoJr2gehTo&_nc_zt=23&_nc_ht=scontent.famd15-2.fna&_nc_gid=fA1X5R5AKpZPq2jV0XPFoQ&oh=00_AfSPKrXQm84dEwe-MXnb3iGC1kP6N2NVFQwVseyMTRTNiA&oe=68831423" width="120" alt="Redis Logo" /></a>
 </div>
 
 
