@@ -602,7 +602,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <a href="https://nestjs.com/"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
   <a href="https://grpc.io/"><img src="https://grpc.io/img/logos/grpc-icon-white.png" width="120" alt="gRPC Logo" /></a>
   <a href="https://www.postgresql.org/"><img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="120" alt="PostgreSQL Logo" /></a>
-  <a href="https://redis.io/"><img width="655" height="604" alt="Redis_Mark_Red_RGB" src="https://github.com/user-attachments/assets/40ef7817-da53-4fee-ab19-f71fc113de58" alt="Redis Logo" /></a>
 </div>
 
 
