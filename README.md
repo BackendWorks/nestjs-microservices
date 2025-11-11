@@ -596,14 +596,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ using NestJS, gRPC, and modern microservices patterns**
-
-<div align="center">
-  <a href="https://nestjs.com/"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-  <a href="https://grpc.io/"><img src="https://grpc.io/img/logos/grpc-icon-white.png" width="120" alt="gRPC Logo" /></a>
-  <a href="https://www.postgresql.org/"><img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="120" alt="PostgreSQL Logo" /></a>
-</div>
-
-
 
 
