@@ -1,625 +1,194 @@
-# NestJS Microservices Architecture
+# NestJS Microservices
 
-[![NestJS](https://img.shields.io/badge/NestJS-10.4.6-red.svg)](https://nestjs.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-18.0.0-green.svg)](https://nodejs.org/)
-[![Docker](https://img.shields.io/badge/Docker-20.0.0-blue.svg)](https://docker.com/)
+[![NestJS](https://img.shields.io/badge/NestJS-11.x-red.svg)](https://nestjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A production-ready microservices architecture built with **NestJS**, **gRPC**, **PostgreSQL**, **Redis**, and **Kong API Gateway**. This project demonstrates a scalable, maintainable microservices pattern with proper service communication, authentication, rate limiting, and comprehensive monitoring capabilities.
+Production-ready NestJS microservices monorepo — JWT auth, post management, async workers, shared ORM-agnostic database packages, Kong API gateway, and gRPC inter-service communication.
 
-## 📋 Table of Contents
-
-- [🏗️ Architecture Overview](#️-architecture-overview)
-- [🚀 Features](#-features)
-- [📋 Prerequisites](#-prerequisites)
-- [⚡ Quick Start](#-quick-start)
-- [🔧 Configuration](#-configuration)
-- [📡 API Endpoints](#-api-endpoints)
-- [🧪 Development](#-development)
-- [📊 Monitoring & Health Checks](#-monitoring--health-checks)
-- [🔒 Security Features](#-security-features)
-- [🚀 Deployment](#-deployment)
-- [📚 Documentation](#-documentation)
-- [🛠️ Troubleshooting](#️-troubleshooting)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-
-## 🏗️ Architecture Overview
-
-```mermaid
-graph TB
-    Client[Client Applications] --> Kong[Kong API Gateway<br/>Port: 8000]
-    Kong --> Auth[Auth Service<br/>Port: 9001]
-    Kong --> Post[Post Service<br/>Port: 9002]
-    Auth --> PostgreSQL[(PostgreSQL<br/>Port: 5432)]
-    Post --> PostgreSQL
-    Auth --> Redis[(Redis<br/>Port: 6379)]
-    Post --> Redis
-    Auth -.->|gRPC| Post
-    Post -.->|gRPC| Auth
-```
-
-### Service Communication Flow
+## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Kong Gateway  │    │   Auth Service  │    │   Post Service  │
-│   (API Gateway) │◄──►│   (Port: 9001)  │◄──►│   (Port: 9002)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   PostgreSQL    │    │     Redis       │    │   Monitoring    │
-│   (Database)    │    │    (Cache)      │    │   (Health)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+Client → Kong (:8000) → auth-service (:9001)
+                      → post-service (:9002)
+
+auth-service  ←gRPC→  post-service   (token validation on every request)
+auth-service  ←gRPC→  auth-worker    (:50053, async jobs)
+post-service  ←gRPC→  post-worker    (:50054, async jobs)
+
+auth-service  ──uses──► @backendworks/auth-db  (User, Role)
+auth-worker   ──uses──► @backendworks/auth-db
+post-service  ──uses──► @backendworks/post-db  (Post)
+post-worker   ──uses──► @backendworks/post-db
 ```
 
-## 🚀 Features
+### Repositories
 
-### 🔧 Core Services
+| Repo | Type | HTTP | gRPC | DB Package |
+|---|---|---|---|---|
+| [auth-service](https://github.com/BackendWorks/auth-service) | Service | `:9001` | `:50051` | `@backendworks/auth-db` |
+| [post-service](https://github.com/BackendWorks/post-service) | Service | `:9002` | `:50052` | `@backendworks/post-db` |
+| [auth-worker](https://github.com/BackendWorks/auth-worker) | Worker | — | `:50053` | `@backendworks/auth-db` |
+| [post-worker](https://github.com/BackendWorks/post-worker) | Worker | — | `:50054` | `@backendworks/post-db` |
+| [auth-db](https://github.com/BackendWorks/auth-db) | Package | — | — | Prisma (User, Role) |
+| [post-db](https://github.com/BackendWorks/post-db) | Package | — | — | Prisma (Post) |
 
-- **🔐 Auth Service**: User authentication, authorization, and JWT token management
-- **📝 Post Service**: Blog post management with user integration
-- **🌐 Kong API Gateway**: Centralized API routing and management
-- **🗄️ PostgreSQL**: Primary database for data persistence
-- **⚡ Redis**: Caching layer for performance optimization
+## Key Design Decisions
 
-### ⚡ Technical Features
+- **gRPC-based auth in post-service** — `post-service` validates Bearer tokens by calling `auth-service` via gRPC (`ValidateToken`). No Passport. Authenticated user (`id`, `role`) is injected into `request.user`.
+- **ORM-agnostic packages** — `auth-db` and `post-db` expose repository interfaces (`IUserRepository`, `IPostRepository`). Apps never import `PrismaClient` directly. Swap the ORM by changing only the package internals.
+- **Database migrations owned by packages** — Never add a `schema.prisma` inside an app or worker. Run `prisma migrate dev` from `packages/auth-db/` or `packages/post-db/`.
+- **Workers are async consumers** — `auth-worker` handles email dispatch and cleanup jobs. `post-worker` handles search indexing and media processing. Both communicate via gRPC and Redis queues.
 
-- **🚀 gRPC Communication**: High-performance inter-service communication
-- **🔑 JWT Authentication**: Secure token-based authentication
-- **👥 Role-based Authorization**: ADMIN and USER role support
-- **🛡️ Rate Limiting**: Kong-based API rate limiting with configurable thresholds
-- **📝 Soft Delete**: Audit trails for data integrity
-- **📄 Pagination**: Efficient data pagination
-- **🔍 Search & Filtering**: Advanced search capabilities
-- **💚 Health Monitoring**: Built-in health checks
-- **📖 API Documentation**: Swagger/OpenAPI documentation
-- **🐳 Docker Support**: Containerized deployment
-- **🔄 Database Migrations**: Automated schema management
-- **🧪 Test Coverage**: Comprehensive unit and integration tests
+## Quick Start
 
-## 📋 Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- **🐳 Docker & Docker Compose**: For containerized deployment
-- **🟢 Node.js >= 18.0.0**: For local development
-- **📦 npm >= 9.0.0**: Package manager
-- **📝 Git**: Version control
-
-### System Requirements
-
-- **RAM**: Minimum 4GB (8GB recommended)
-- **Storage**: At least 2GB free space
-- **OS**: Windows, macOS, or Linux
-
-## ⚡ Quick Start
-
-### 1. 🚀 Clone the Repository
+### Docker (recommended)
 
 ```bash
-git clone https://github.com/your-username/nestjs-microservices.git
+git clone --recurse-submodules https://github.com/BackendWorks/nestjs-microservices.git
 cd nestjs-microservices
+docker-compose up --build
 ```
 
-### 2. 🔧 Environment Setup
+Services will be available at:
+- **Kong Gateway**: `http://localhost:8000`
+- **Auth Service**: `http://localhost:9001` — Swagger at `/docs`
+- **Post Service**: `http://localhost:9002` — Swagger at `/docs`
 
-The project includes pre-configured environment files for Docker deployment:
+### Local Development
 
-#### Auth Service Configuration (`auth/.env`)
+Each app is developed independently from its own directory:
+
+```bash
+# Auth Service
+cd auth-service && npm install && npm run dev
+
+# Post Service
+cd post-service && npm install && npm run dev
+
+# Auth Worker
+cd auth-worker && npm install && npm run dev
+
+# Post Worker
+cd post-worker && npm install && npm run dev
+```
+
+> **Note:** `npm run proto:generate` must be run before first start or after editing `.proto` files. `npm run dev` does this automatically.
+
+## Environment Variables
+
+### Auth Service (`.env`)
 
 ```env
-# Application Configuration
-NODE_ENV="local"
-APP_NAME="@backendworks/auth"
-APP_CORS_ORIGINS="*"
-APP_DEBUG=true
-
-# HTTP Server Configuration
-HTTP_ENABLE=true
-HTTP_HOST="0.0.0.0"
-HTTP_PORT=9001
-HTTP_VERSIONING_ENABLE=true
-HTTP_VERSION=1
-
-# Database Configuration
-DATABASE_URL="postgresql://admin:master123@localhost:5432/postgres?schema=public"
-
-# JWT Configuration
-ACCESS_TOKEN_SECRET_KEY="EAJYjNJUnRGJ6uq1YfGw4NG1pd1z102J"
-ACCESS_TOKEN_EXPIRED="1d"
-REFRESH_TOKEN_SECRET_KEY="LcnlpiuHIJ6eS51u1mcOdk0P49r2Crwu"
-REFRESH_TOKEN_EXPIRED="7d"
-
-# Redis Configuration
-REDIS_URL="redis://localhost:6379"
-REDIS_KEY_PREFIX="auth:"
+NODE_ENV=local
+APP_PORT=9001
+DATABASE_URL=postgresql://admin:master123@localhost:5432/postgres?schema=public
+ACCESS_TOKEN_SECRET_KEY=your-access-secret
+ACCESS_TOKEN_EXPIRED=1d
+REFRESH_TOKEN_SECRET_KEY=your-refresh-secret
+REFRESH_TOKEN_EXPIRED=7d
+REDIS_URL=redis://localhost:6379
+REDIS_KEY_PREFIX=auth:
 REDIS_TTL=3600
-
-# gRPC Configuration
-GRPC_URL="0.0.0.0:50051"
-GRPC_PACKAGE="auth"
+GRPC_URL=0.0.0.0:50051
 ```
 
-#### Post Service Configuration (`post/.env`)
+### Post Service (`.env`)
 
 ```env
-# Application Configuration
-NODE_ENV="local"
-APP_NAME="@backendworks/post"
-APP_CORS_ORIGINS="*"
-APP_DEBUG=true
-
-# HTTP Server Configuration
-HTTP_ENABLE=true
-HTTP_HOST="0.0.0.0"
-HTTP_PORT=9002
-HTTP_VERSIONING_ENABLE=true
-HTTP_VERSION=1
-
-# Database Configuration
-DATABASE_URL="postgresql://admin:master123@localhost:5432/postgres?schema=public"
-
-# JWT Configuration
-ACCESS_TOKEN_SECRET_KEY="EAJYjNJUnRGJ6uq1YfGw4NG1pd1z102J"
-ACCESS_TOKEN_EXPIRED="1d"
-REFRESH_TOKEN_SECRET_KEY="LcnlpiuHIJ6eS51u1mcOdk0P49r2Crwu"
-REFRESH_TOKEN_EXPIRED="7d"
-
-# Redis Configuration
-REDIS_URL="redis://localhost:6379"
-REDIS_KEY_PREFIX="post:"
+NODE_ENV=local
+APP_PORT=9002
+DATABASE_URL=postgresql://admin:master123@localhost:5432/postgres?schema=public
+ACCESS_TOKEN_SECRET_KEY=your-access-secret
+REDIS_URL=redis://localhost:6379
+REDIS_KEY_PREFIX=post:
 REDIS_TTL=3600
-
-# gRPC Configuration
-GRPC_URL="0.0.0.0:50052"
-GRPC_PACKAGE="post"
-GRPC_AUTH_URL="0.0.0.0:50051"
-GRPC_AUTH_PACKAGE="auth"
+GRPC_URL=0.0.0.0:50052
+GRPC_AUTH_URL=0.0.0.0:50051
 ```
 
-### 3. 🐳 Start the Services
+## API Endpoints
+
+All external traffic routes through Kong on `:8000`.
+
+### Auth (`/auth`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/auth/login` | Public | Login, returns access + refresh tokens |
+| `POST` | `/auth/signup` | Public | Register new user |
+| `GET` | `/auth/refresh` | Bearer (refresh) | Rotate tokens |
+| `GET` | `/user/me` | Bearer | Get authenticated user profile |
+| `GET` | `/admin/user` | Admin | List users (paginated) |
+| `PATCH` | `/admin/user/:id` | Admin | Update user |
+| `DELETE` | `/admin/user/:id` | Admin | Soft-delete user |
+
+### Posts (`/post`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/post` | Public | List posts (paginated, searchable) |
+| `POST` | `/post` | Bearer | Create post |
+| `GET` | `/post/:id` | Bearer | Get post by ID |
+| `PATCH` | `/post/:id` | Bearer | Update post |
+| `DELETE` | `/post/:id` | Bearer | Soft-delete post |
+
+### Health
+
+```
+GET http://localhost:9001/health
+GET http://localhost:9002/health
+```
+
+## Database Migrations
+
+Migrations are owned by the shared packages, not the apps.
 
 ```bash
-# Start all services with Docker Compose
-docker-compose up -d
+# Auth domain
+cd packages/auth-db
+npm run prisma:migrate     # prisma migrate dev
+npm run prisma:generate    # regenerate Prisma client
+npm run prisma:studio      # open Prisma Studio
 
-# View logs in real-time
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### 4. 🗄️ Database Setup
-
-```bash
-# Run database migrations for Auth Service
-docker-compose exec auth-service npm run prisma:migrate
-
-# Run database migrations for Post Service
-docker-compose exec post-service npm run prisma:migrate
-
-# Generate Prisma client
-docker-compose exec auth-service npm run prisma:generate
-docker-compose exec post-service npm run prisma:generate
-```
-
-### 5. ✅ Verify Installation
-
-```bash
-# Check all services are running
-docker-compose ps
-
-# Test Kong API Gateway
-curl http://localhost:8000/auth  # Should return auth service info
-curl http://localhost:8000/post  # Should return post service info
-
-# Check rate limiting headers
-curl -I http://localhost:8000/auth | grep RateLimit
-
-# Verify health endpoints
-curl http://localhost:9001/health
-curl http://localhost:9002/health
-```
-
-## 🔧 Configuration
-
-### Kong API Gateway Configuration
-
-The Kong API Gateway is configured with rate limiting plugins to protect against abuse:
-
-```yaml
-# kong/config.yml
-plugins:
-  - name: rate-limiting
-    route: auth-routes
-    config:
-      minute: 100
-      hour: 1000
-      day: 10000
-      policy: local
-      hide_client_headers: false
-      fault_tolerant: true
-
-  - name: rate-limiting
-    route: post-routes
-    config:
-      minute: 200
-      hour: 2000
-      day: 20000
-      policy: local
-      hide_client_headers: false
-      fault_tolerant: true
-
-  - name: rate-limiting
-    config:
-      minute: 300
-      hour: 3000
-      day: 30000
-      policy: local
-      hide_client_headers: false
-      fault_tolerant: true
-```
-
-**Rate Limiting Headers:**
-
-- `X-RateLimit-Limit-Minute`: Maximum requests per minute
-- `X-RateLimit-Remaining-Minute`: Remaining requests in current minute
-- `RateLimit-Reset`: Seconds until rate limit window resets
-
-**Testing Rate Limits:**
-
-```bash
-# Test rate limiting
-for i in {1..105}; do
-  curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth
-done
-
-# Expected: First 100 requests return 200, subsequent requests return 429
-```
-
-### Service Communication
-
-- **gRPC**: High-performance binary protocol for inter-service communication
-- **HTTP**: RESTful APIs for external clients
-- **Authentication**: JWT tokens for service-to-service communication
-
-## 📡 API Endpoints
-
-### 🌐 Kong API Gateway
-
-- **URL**: `http://localhost:8000`
-- **Admin API**: `http://localhost:8001`
-- **Auth Service**: `http://localhost:8000/auth` (Rate limit: 100/min, 1000/hour, 10000/day)
-- **Post Service**: `http://localhost:8000/post` (Rate limit: 200/min, 2000/hour, 20000/day)
-- **Global Rate Limit**: 300/min, 3000/hour, 30000/day
-
-### 🔐 Authentication Endpoints (via Kong: `/auth`)
-
-```http
-POST /auth/login           # User login
-POST /auth/signup          # User registration
-GET  /auth/refresh         # Refresh access token
-```
-
-### 👥 User Management (via Kong: `/auth`)
-
-```http
-GET    /auth/user/profile          # Get user profile (protected)
-PUT    /auth/user/profile          # Update user profile (protected)
-GET    /auth/admin/user            # List users (admin only)
-DELETE /auth/admin/user/:id        # Delete user (admin only)
-```
-
-### 📝 Post Management (via Kong: `/post`)
-
-```http
-GET    /post/post                   # List posts (paginated)
-POST   /post/post                   # Create post (protected)
-PUT    /post/post/:id               # Update post (protected)
-DELETE /post/post/batch             # Bulk delete posts (protected)
-```
-
-### 🔗 Direct Service Access
-
-#### Auth Service
-
-- **HTTP API**: `http://localhost:9001`
-- **gRPC**: `localhost:50051`
-- **Health Check**: `http://localhost:9001/health`
-- **API Docs**: `http://localhost:9001/docs`
-
-#### Post Service
-
-- **HTTP API**: `http://localhost:9002`
-- **gRPC**: `localhost:50052`
-- **Health Check**: `http://localhost:9002/health`
-- **API Docs**: `http://localhost:9002/docs`
-
-### 🗄️ Database & Cache
-
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
-
-## 🧪 Development
-
-### 🏠 Local Development
-
-```bash
-# Start individual services
-cd auth && npm run dev
-cd post && npm run dev
-
-# Run tests
-cd auth && npm test
-cd post && npm test
-
-# Database operations
-npm run prisma:generate
+# Post domain
+cd packages/post-db
 npm run prisma:migrate
+npm run prisma:generate
 npm run prisma:studio
 ```
 
-### 🐳 Docker Development
+## Testing
+
+All services enforce **100% branch/function/line/statement coverage**.
 
 ```bash
-# Build and start services
-docker-compose up --build
-
-# View service logs
-docker-compose logs -f auth-service
-docker-compose logs -f post-service
-
-# Access service shells
-docker-compose exec auth-service sh
-docker-compose exec post-service sh
+cd auth-service && npm test
+cd post-service && npm test
+cd auth-worker  && npm test
+cd post-worker  && npm test
 ```
 
-### 🗄️ Database Management
+## Kong Rate Limits
 
-```bash
-# Access PostgreSQL
-docker-compose exec postgres psql -U admin -d postgres
+Configured declaratively in `kong/config.yml`:
 
-# Access Redis
-docker-compose exec redis redis-cli
+| Route | Limit |
+|---|---|
+| Auth routes | 100 req/min |
+| Post routes | 200 req/min |
+| Global | 300 req/min |
 
-# Run migrations
-docker-compose exec auth-service npm run prisma:migrate
-docker-compose exec post-service npm run prisma:migrate
+## GitHub Packages
 
-# Open Prisma Studio
-docker-compose exec auth-service npm run prisma:studio
-docker-compose exec post-service npm run prisma:studio
+`@backendworks/auth-db` and `@backendworks/post-db` are published to GitHub Packages. Ensure `~/.npmrc` contains:
+
+```
+@backendworks:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
 ```
 
-## 📊 Monitoring & Health Checks
+## License
 
-### 💚 Health Endpoints
-
-- **Auth Service**: `http://localhost:9001/health`
-- **Post Service**: `http://localhost:9002/health`
-- **Kong Gateway**: `http://localhost:8001/status`
-- **Kong Health Check**: `curl http://localhost:8000/auth` (should return service response)
-
-### 🐳 Docker Health Checks
-
-All services include Docker health checks for container orchestration:
-
-- **Auth Service**: HTTP health check on port 9001
-- **Post Service**: HTTP health check on port 9002
-- **PostgreSQL**: Database connectivity check
-- **Redis**: Cache connectivity check
-
-## 🔒 Security Features
-
-### 🔐 Authentication & Authorization
-
-- **JWT Tokens**: Access and refresh token system
-- **Role-based Access**: ADMIN and USER role support
-- **Password Hashing**: bcrypt password security
-- **Token Validation**: gRPC-based token validation
-
-### 🛡️ API Security
-
-- **CORS Protection**: Cross-origin request handling
-- **Helmet Security**: Security headers
-- **Input Validation**: Request validation with class-validator
-- **Rate Limiting**: Kong-based rate limiting with per-service thresholds
-- **API Gateway Security**: Centralized security policies through Kong
-
-### 🏗️ Infrastructure Security
-
-- **Network Isolation**: Docker network isolation
-- **Environment Variables**: Secure configuration management
-- **Health Checks**: Service health monitoring
-
-## 🚀 Deployment
-
-### 🏭 Production Deployment
-
-```bash
-# Build production images
-docker-compose -f docker-compose.prod.yml up --build
-
-# Scale services
-docker-compose up --scale auth-service=3 --scale post-service=3
-```
-
-### 🌍 Environment Configuration
-
-Set production environment variables:
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:pass@host:5432/db
-
-# Redis
-REDIS_URL=redis://host:6379
-
-# JWT Secrets
-ACCESS_TOKEN_SECRET_KEY=your-production-secret
-REFRESH_TOKEN_SECRET_KEY=your-production-secret
-
-# Service URLs
-AUTH_SERVICE_URL=grpc://auth-service:50051
-```
-
-### 🔄 Database Migrations
-
-```bash
-# Run production migrations
-docker-compose exec auth-service npm run prisma:migrate:prod
-docker-compose exec post-service npm run prisma:migrate:prod
-```
-
-## 📚 Documentation
-
-### 📖 Service Documentation
-
-- **[Auth Service](./auth/README.md)**: Authentication and user management
-- **[Post Service](./post/README.md)**: Post management and content
-
-### 📖 API Documentation
-
-- **Auth Service**: `http://localhost:9001/docs`
-- **Post Service**: `http://localhost:9002/docs`
-
-### 🏗️ Architecture Documentation
-
-- **gRPC Services**: Protocol buffer definitions in `*/src/protos/`
-- **Database Schema**: Prisma schema files in `*/prisma/schema.prisma`
-- **Kong Configuration**: API gateway config in `kong/config.yml`
-
-## 🛠️ Troubleshooting
-
-### 🔍 Common Issues
-
-#### Service Won't Start
-
-```bash
-# Check service logs
-docker-compose logs auth-service
-docker-compose logs post-service
-
-# Check health status
-curl http://localhost:9001/health
-curl http://localhost:9002/health
-```
-
-#### Database Connection Issues
-
-```bash
-# Check PostgreSQL status
-docker-compose exec postgres pg_isready -U admin
-
-# Check Redis status
-docker-compose exec redis redis-cli ping
-```
-
-#### gRPC Communication Issues
-
-```bash
-# Check gRPC ports
-netstat -an | grep 50051
-netstat -an | grep 50052
-```
-
-#### Kong Gateway Issues
-
-```bash
-# Check Kong status
-curl http://localhost:8001/status
-
-# Check Kong configuration
-curl http://localhost:8001/services
-curl http://localhost:8001/routes
-curl http://localhost:8001/plugins
-
-# Check rate limiting status
-curl -I http://localhost:8000/auth  # Check headers for rate limit info
-
-# Restart Kong if needed
-docker-compose restart kong
-```
-
-### 💡 Development Tips
-
-- Use `docker-compose logs -f` to monitor service logs
-- Check health endpoints for service status
-- Use Prisma Studio for database inspection: `npm run prisma:studio`
-- Monitor Kong gateway logs for API routing issues
-- Test rate limiting with the provided script: `./test-rate-limiting.sh`
-
-### 🧪 Testing the System
-
-```bash
-# Test all services are running
-curl http://localhost:8000/auth
-curl http://localhost:8000/post
-
-# Test rate limiting
-for i in {1..10}; do
-  curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth
-done
-
-# Test health endpoints
-curl http://localhost:9001/health
-curl http://localhost:9002/health
-curl http://localhost:8001/status
-
-# Check service logs
-docker-compose logs auth-service --tail 20
-docker-compose logs post-service --tail 20
-docker-compose logs kong --tail 20
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **🍴 Fork the repository**
-2. **🌿 Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **💻 Make your changes** and add tests
-4. **🧪 Run tests**: `npm test`
-5. **📝 Commit your changes**: `git commit -m 'Add amazing feature'`
-6. **📤 Push to the branch**: `git push origin feature/amazing-feature`
-7. **🔀 Open a Pull Request**
-
-### 📋 Development Guidelines
-
-- Follow the existing code structure and patterns
-- Add tests for new functionality
-- Update documentation for API changes
-- Ensure all services start successfully
-- Test inter-service communication
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-### 🆘 Getting Help
-
-- **🐛 Issues**: Create an issue in the repository
-- **📖 Documentation**: Check service-specific README files
-- **💚 Health Checks**: Use health endpoints for service status
-
-### 👥 Community
-
-- **💬 Discussions**: Use GitHub Discussions for questions
-- **🤝 Contributions**: Pull requests are welcome
-- **💡 Feedback**: Open issues for bugs or feature requests
-
-## 🙏 Acknowledgments
-
-- **NestJS Team**: For the excellent framework
-- **Prisma Team**: For the database toolkit
-- **Kong Team**: For the API gateway
-- **Docker Team**: For containerization technology
-
----
+[MIT](LICENSE)
