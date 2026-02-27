@@ -58,6 +58,7 @@ graph TB
 ## 🚀 Features
 
 ### 🔧 Core Services
+
 - **🔐 Auth Service**: User authentication, authorization, and JWT token management
 - **📝 Post Service**: Blog post management with user integration
 - **🌐 Kong API Gateway**: Centralized API routing and management
@@ -65,6 +66,7 @@ graph TB
 - **⚡ Redis**: Caching layer for performance optimization
 
 ### ⚡ Technical Features
+
 - **🚀 gRPC Communication**: High-performance inter-service communication
 - **🔑 JWT Authentication**: Secure token-based authentication
 - **👥 Role-based Authorization**: ADMIN and USER role support
@@ -88,6 +90,7 @@ Before you begin, ensure you have the following installed:
 - **📝 Git**: Version control
 
 ### System Requirements
+
 - **RAM**: Minimum 4GB (8GB recommended)
 - **Storage**: At least 2GB free space
 - **OS**: Windows, macOS, or Linux
@@ -105,7 +108,7 @@ cd nestjs-microservices
 
 The project includes pre-configured environment files for Docker deployment:
 
-#### Auth Service Configuration (`auth/.env.docker`)
+#### Auth Service Configuration (`auth/.env`)
 
 ```env
 # Application Configuration
@@ -140,7 +143,7 @@ GRPC_URL="0.0.0.0:50051"
 GRPC_PACKAGE="auth"
 ```
 
-#### Post Service Configuration (`post/.env.docker`)
+#### Post Service Configuration (`post/.env`)
 
 ```env
 # Application Configuration
@@ -262,14 +265,16 @@ plugins:
 ```
 
 **Rate Limiting Headers:**
+
 - `X-RateLimit-Limit-Minute`: Maximum requests per minute
 - `X-RateLimit-Remaining-Minute`: Remaining requests in current minute
 - `RateLimit-Reset`: Seconds until rate limit window resets
 
 **Testing Rate Limits:**
+
 ```bash
 # Test rate limiting
-for i in {1..105}; do 
+for i in {1..105}; do
   curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth
 done
 
@@ -277,6 +282,7 @@ done
 ```
 
 ### Service Communication
+
 - **gRPC**: High-performance binary protocol for inter-service communication
 - **HTTP**: RESTful APIs for external clients
 - **Authentication**: JWT tokens for service-to-service communication
@@ -284,6 +290,7 @@ done
 ## 📡 API Endpoints
 
 ### 🌐 Kong API Gateway
+
 - **URL**: `http://localhost:8000`
 - **Admin API**: `http://localhost:8001`
 - **Auth Service**: `http://localhost:8000/auth` (Rate limit: 100/min, 1000/hour, 10000/day)
@@ -319,18 +326,21 @@ DELETE /post/post/batch             # Bulk delete posts (protected)
 ### 🔗 Direct Service Access
 
 #### Auth Service
+
 - **HTTP API**: `http://localhost:9001`
 - **gRPC**: `localhost:50051`
 - **Health Check**: `http://localhost:9001/health`
 - **API Docs**: `http://localhost:9001/docs`
 
 #### Post Service
+
 - **HTTP API**: `http://localhost:9002`
 - **gRPC**: `localhost:50052`
 - **Health Check**: `http://localhost:9002/health`
 - **API Docs**: `http://localhost:9002/docs`
 
 ### 🗄️ Database & Cache
+
 - **PostgreSQL**: `localhost:5432`
 - **Redis**: `localhost:6379`
 
@@ -389,13 +399,16 @@ docker-compose exec post-service npm run prisma:studio
 ## 📊 Monitoring & Health Checks
 
 ### 💚 Health Endpoints
+
 - **Auth Service**: `http://localhost:9001/health`
 - **Post Service**: `http://localhost:9002/health`
 - **Kong Gateway**: `http://localhost:8001/status`
 - **Kong Health Check**: `curl http://localhost:8000/auth` (should return service response)
 
 ### 🐳 Docker Health Checks
+
 All services include Docker health checks for container orchestration:
+
 - **Auth Service**: HTTP health check on port 9001
 - **Post Service**: HTTP health check on port 9002
 - **PostgreSQL**: Database connectivity check
@@ -404,12 +417,14 @@ All services include Docker health checks for container orchestration:
 ## 🔒 Security Features
 
 ### 🔐 Authentication & Authorization
+
 - **JWT Tokens**: Access and refresh token system
 - **Role-based Access**: ADMIN and USER role support
 - **Password Hashing**: bcrypt password security
 - **Token Validation**: gRPC-based token validation
 
 ### 🛡️ API Security
+
 - **CORS Protection**: Cross-origin request handling
 - **Helmet Security**: Security headers
 - **Input Validation**: Request validation with class-validator
@@ -417,6 +432,7 @@ All services include Docker health checks for container orchestration:
 - **API Gateway Security**: Centralized security policies through Kong
 
 ### 🏗️ Infrastructure Security
+
 - **Network Isolation**: Docker network isolation
 - **Environment Variables**: Secure configuration management
 - **Health Checks**: Service health monitoring
@@ -434,6 +450,7 @@ docker-compose up --scale auth-service=3 --scale post-service=3
 ```
 
 ### 🌍 Environment Configuration
+
 Set production environment variables:
 
 ```bash
@@ -462,14 +479,17 @@ docker-compose exec post-service npm run prisma:migrate:prod
 ## 📚 Documentation
 
 ### 📖 Service Documentation
+
 - **[Auth Service](./auth/README.md)**: Authentication and user management
 - **[Post Service](./post/README.md)**: Post management and content
 
 ### 📖 API Documentation
+
 - **Auth Service**: `http://localhost:9001/docs`
 - **Post Service**: `http://localhost:9002/docs`
 
 ### 🏗️ Architecture Documentation
+
 - **gRPC Services**: Protocol buffer definitions in `*/src/protos/`
 - **Database Schema**: Prisma schema files in `*/prisma/schema.prisma`
 - **Kong Configuration**: API gateway config in `kong/config.yml`
@@ -479,6 +499,7 @@ docker-compose exec post-service npm run prisma:migrate:prod
 ### 🔍 Common Issues
 
 #### Service Won't Start
+
 ```bash
 # Check service logs
 docker-compose logs auth-service
@@ -490,6 +511,7 @@ curl http://localhost:9002/health
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Check PostgreSQL status
 docker-compose exec postgres pg_isready -U admin
@@ -499,6 +521,7 @@ docker-compose exec redis redis-cli ping
 ```
 
 #### gRPC Communication Issues
+
 ```bash
 # Check gRPC ports
 netstat -an | grep 50051
@@ -506,6 +529,7 @@ netstat -an | grep 50052
 ```
 
 #### Kong Gateway Issues
+
 ```bash
 # Check Kong status
 curl http://localhost:8001/status
@@ -523,6 +547,7 @@ docker-compose restart kong
 ```
 
 ### 💡 Development Tips
+
 - Use `docker-compose logs -f` to monitor service logs
 - Check health endpoints for service status
 - Use Prisma Studio for database inspection: `npm run prisma:studio`
@@ -537,7 +562,7 @@ curl http://localhost:8000/auth
 curl http://localhost:8000/post
 
 # Test rate limiting
-for i in {1..10}; do 
+for i in {1..10}; do
   curl -s -w "Request $i: %{http_code}\n" -o /dev/null http://localhost:8000/auth
 done
 
@@ -565,6 +590,7 @@ We welcome contributions! Please follow these steps:
 7. **🔀 Open a Pull Request**
 
 ### 📋 Development Guidelines
+
 - Follow the existing code structure and patterns
 - Add tests for new functionality
 - Update documentation for API changes
@@ -578,11 +604,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 ### 🆘 Getting Help
+
 - **🐛 Issues**: Create an issue in the repository
 - **📖 Documentation**: Check service-specific README files
 - **💚 Health Checks**: Use health endpoints for service status
 
 ### 👥 Community
+
 - **💬 Discussions**: Use GitHub Discussions for questions
 - **🤝 Contributions**: Pull requests are welcome
 - **💡 Feedback**: Open issues for bugs or feature requests
@@ -595,6 +623,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Docker Team**: For containerization technology
 
 ---
-
-
-

@@ -63,7 +63,7 @@ npm run test                 # unit tests with 100% coverage enforced
 Shared package commands run from `packages/auth-db/` or `packages/post-db/`:
 
 ```bash
-npm run prisma:migrate       # dotenv -e .env.docker -- prisma migrate dev
+npm run prisma:migrate       # dotenv -e .env -- prisma migrate dev
 npm run prisma:generate      # regenerates Prisma client from schema
 npm run prisma:studio        # opens Prisma Studio
 npm run build                # tsc compile → dist/ for publishing
