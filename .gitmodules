@@ -1,6 +1,18 @@
-[submodule "auth"]
-	path = auth
-	url = https://github.com/BackendWorks/auth.git
-[submodule "post"]
-	path = post
-	url = https://github.com/BackendWorks/post.git
+[submodule "auth-service"]
+	path = auth-service
+	url = https://github.com/BackendWorks/auth-service.git
+[submodule "post-service"]
+	path = post-service
+	url = https://github.com/BackendWorks/post-service.git
+[submodule "auth-worker"]
+	path = auth-worker
+	url = https://github.com/BackendWorks/auth-worker.git
+[submodule "post-worker"]
+	path = post-worker
+	url = https://github.com/BackendWorks/post-worker.git
+[submodule "packages/auth-db"]
+	path = packages/auth-db
+	url = https://github.com/BackendWorks/auth-db.git
+[submodule "packages/post-db"]
+	path = packages/post-db
+	url = https://github.com/BackendWorks/post-db.git

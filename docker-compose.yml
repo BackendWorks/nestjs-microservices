@@ -5,9 +5,9 @@ services:
     container_name: bw-kong
     restart: unless-stopped
     ports:
-      - "8000:8000"    # HTTP API
-      - "8443:8443"    # HTTPS API
-      - "8001:8001"    # Admin API
+      - "8000:8000" # HTTP API
+      - "8443:8443" # HTTPS API
+      - "8001:8001" # Admin API
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
@@ -38,19 +38,29 @@ services:
     container_name: bw-auth-service
     restart: unless-stopped
     ports:
-      - "9001:9001"    # HTTP API
-      - "50051:50051"  # gRPC
+      - "9001:9001" # HTTP API
+      - "50051:50051" # gRPC
     env_file:
-      - ./auth/.env.docker
+      - ./auth/.env
+    environment:
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=auth"
+      REDIS_URL: "redis://redis:6379"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - bw-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9001/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:9001/health || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,10 +74,14 @@ services:
     container_name: bw-post-service
     restart: unless-stopped
     ports:
-      - "9002:9002"    # HTTP API
-      - "50052:50052"  # gRPC
+      - "9002:9002" # HTTP API
+      - "50052:50052" # gRPC
     env_file:
-      - ./post/.env.docker
+      - ./post/.env
+    environment:
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=post"
+      REDIS_URL: "redis://redis:6379"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
     depends_on:
       auth-service:
         condition: service_healthy
@@ -75,10 +89,16 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - bw-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9002/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:9002/health || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -123,6 +143,87 @@ services:
       timeout: 5s
       retries: 3
 
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: bw-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bw-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Mailhog — local SMTP catcher for development (auth-worker welcome emails)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: bw-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI (http://localhost:8025)
+    networks:
+      - bw-network
+
+  # Auth Worker — RabbitMQ consumer for auth-service events
+  auth-worker:
+    build:
+      context: ./auth-worker
+      dockerfile: Dockerfile
+    container_name: bw-auth-worker
+    restart: unless-stopped
+    env_file:
+      - ./auth-worker/.env
+    environment:
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=auth"
+      REDIS_URL: "redis://redis:6379"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+      MAIL_HOST: "mailhog"
+      MAIL_PORT: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - bw-network
+
+  # Post Worker — RabbitMQ consumer for post-service events
+  post-worker:
+    build:
+      context: ./post-worker
+      dockerfile: Dockerfile
+    container_name: bw-post-worker
+    restart: unless-stopped
+    env_file:
+      - ./post-worker/.env
+    environment:
+      DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=post"
+      REDIS_URL: "redis://redis:6379"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - bw-network
+
 networks:
   bw-network:
     driver: bridge
@@ -130,3 +231,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
