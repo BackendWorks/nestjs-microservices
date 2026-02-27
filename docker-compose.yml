@@ -33,15 +33,17 @@ services:
   # Authentication Service
   auth-service:
     build:
-      context: ./auth
+      context: ./auth-service
       dockerfile: Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
     container_name: bw-auth-service
     restart: unless-stopped
     ports:
       - "9001:9001" # HTTP API
       - "50051:50051" # gRPC
     env_file:
-      - ./auth/.env
+      - ./auth-service/.env
     environment:
       DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=auth"
       REDIS_URL: "redis://redis:6379"
@@ -69,15 +71,17 @@ services:
   # Post Service
   post-service:
     build:
-      context: ./post
+      context: ./post-service
       dockerfile: Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
     container_name: bw-post-service
     restart: unless-stopped
     ports:
       - "9002:9002" # HTTP API
       - "50052:50052" # gRPC
     env_file:
-      - ./post/.env
+      - ./post-service/.env
     environment:
       DATABASE_URL: "postgresql://admin:master123@postgres:5432/postgres?schema=post"
       REDIS_URL: "redis://redis:6379"
@@ -181,6 +185,8 @@ services:
     build:
       context: ./auth-worker
       dockerfile: Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
     container_name: bw-auth-worker
     restart: unless-stopped
     env_file:
@@ -206,6 +212,8 @@ services:
     build:
       context: ./post-worker
       dockerfile: Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
     container_name: bw-post-worker
     restart: unless-stopped
     env_file:

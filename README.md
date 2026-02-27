@@ -9,30 +9,68 @@ Production-ready NestJS microservices monorepo — JWT auth, post management, as
 
 ## Architecture
 
-```
-Client → Kong (:8000) → auth-service (:9001)
-                      → post-service (:9002)
+```mermaid
+graph LR
+  Client(["Client"])
 
-auth-service  ←gRPC→  post-service   (token validation on every request)
-auth-service  ←gRPC→  auth-worker    (:50053, async jobs)
-post-service  ←gRPC→  post-worker    (:50054, async jobs)
+  subgraph Gateway["API Gateway"]
+    Kong["Kong\n:8000"]
+  end
 
-auth-service  ──uses──► @backendworks/auth-db  (User, Role)
-auth-worker   ──uses──► @backendworks/auth-db
-post-service  ──uses──► @backendworks/post-db  (Post)
-post-worker   ──uses──► @backendworks/post-db
+  subgraph Services["Services"]
+    AuthSvc["auth-service\nHTTP :9001 | gRPC :50051"]
+    PostSvc["post-service\nHTTP :9002 | gRPC :50052"]
+  end
+
+  subgraph Workers["Async Workers"]
+    AuthWorker["auth-worker\ngRPC :50053"]
+    PostWorker["post-worker\ngRPC :50054"]
+  end
+
+  subgraph Packages["Shared DB Packages"]
+    AuthDB["@backendworks/auth-db\nUser · Role"]
+    PostDB["@backendworks/post-db\nPost"]
+  end
+
+  subgraph Infra["Infrastructure"]
+    PG[("PostgreSQL\n:5432")]
+    Redis[("Redis\n:6379")]
+    RMQ["RabbitMQ\n:5672"]
+    Mail["Mailhog\n:1025"]
+  end
+
+  Client --> Kong
+  Kong -->|"HTTP"| AuthSvc
+  Kong -->|"HTTP"| PostSvc
+
+  PostSvc -->|"gRPC ValidateToken"| AuthSvc
+  AuthSvc -->|"gRPC async jobs"| AuthWorker
+  PostSvc -->|"gRPC async jobs"| PostWorker
+
+  AuthSvc --> AuthDB
+  AuthWorker --> AuthDB
+  PostSvc --> PostDB
+  PostWorker --> PostDB
+
+  AuthDB --> PG
+  PostDB --> PG
+  AuthSvc --> Redis
+  PostSvc --> Redis
+  AuthWorker --> RMQ
+  PostWorker --> RMQ
+  AuthWorker --> Mail
 ```
 
 ### Repositories
 
-| Repo | Type | HTTP | gRPC | DB Package |
-|---|---|---|---|---|
+| Repo                                                         | Type    | HTTP    | gRPC     | DB Package              |
+| ------------------------------------------------------------ | ------- | ------- | -------- | ----------------------- |
 | [auth-service](https://github.com/BackendWorks/auth-service) | Service | `:9001` | `:50051` | `@backendworks/auth-db` |
 | [post-service](https://github.com/BackendWorks/post-service) | Service | `:9002` | `:50052` | `@backendworks/post-db` |
-| [auth-worker](https://github.com/BackendWorks/auth-worker) | Worker | — | `:50053` | `@backendworks/auth-db` |
-| [post-worker](https://github.com/BackendWorks/post-worker) | Worker | — | `:50054` | `@backendworks/post-db` |
-| [auth-db](https://github.com/BackendWorks/auth-db) | Package | — | — | Prisma (User, Role) |
-| [post-db](https://github.com/BackendWorks/post-db) | Package | — | — | Prisma (Post) |
+| [auth-worker](https://github.com/BackendWorks/auth-worker)   | Worker  | —       | `:50053` | `@backendworks/auth-db` |
+| [post-worker](https://github.com/BackendWorks/post-worker)   | Worker  | —       | `:50054` | `@backendworks/post-db` |
+| [auth-db](https://github.com/BackendWorks/auth-db)           | Package | —       | —        | Prisma (User, Role)     |
+| [post-db](https://github.com/BackendWorks/post-db)           | Package | —       | —        | Prisma (Post)           |
 
 ## Key Design Decisions
 
@@ -52,6 +90,7 @@ docker-compose up --build
 ```
 
 Services will be available at:
+
 - **Kong Gateway**: `http://localhost:8000`
 - **Auth Service**: `http://localhost:9001` — Swagger at `/docs`
 - **Post Service**: `http://localhost:9002` — Swagger at `/docs`
@@ -114,25 +153,25 @@ All external traffic routes through Kong on `:8000`.
 
 ### Auth (`/auth`)
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/auth/login` | Public | Login, returns access + refresh tokens |
-| `POST` | `/auth/signup` | Public | Register new user |
-| `GET` | `/auth/refresh` | Bearer (refresh) | Rotate tokens |
-| `GET` | `/user/me` | Bearer | Get authenticated user profile |
-| `GET` | `/admin/user` | Admin | List users (paginated) |
-| `PATCH` | `/admin/user/:id` | Admin | Update user |
-| `DELETE` | `/admin/user/:id` | Admin | Soft-delete user |
+| Method   | Path              | Auth             | Description                            |
+| -------- | ----------------- | ---------------- | -------------------------------------- |
+| `POST`   | `/auth/login`     | Public           | Login, returns access + refresh tokens |
+| `POST`   | `/auth/signup`    | Public           | Register new user                      |
+| `GET`    | `/auth/refresh`   | Bearer (refresh) | Rotate tokens                          |
+| `GET`    | `/user/me`        | Bearer           | Get authenticated user profile         |
+| `GET`    | `/admin/user`     | Admin            | List users (paginated)                 |
+| `PATCH`  | `/admin/user/:id` | Admin            | Update user                            |
+| `DELETE` | `/admin/user/:id` | Admin            | Soft-delete user                       |
 
 ### Posts (`/post`)
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/post` | Public | List posts (paginated, searchable) |
-| `POST` | `/post` | Bearer | Create post |
-| `GET` | `/post/:id` | Bearer | Get post by ID |
-| `PATCH` | `/post/:id` | Bearer | Update post |
-| `DELETE` | `/post/:id` | Bearer | Soft-delete post |
+| Method   | Path        | Auth   | Description                        |
+| -------- | ----------- | ------ | ---------------------------------- |
+| `GET`    | `/post`     | Public | List posts (paginated, searchable) |
+| `POST`   | `/post`     | Bearer | Create post                        |
+| `GET`    | `/post/:id` | Bearer | Get post by ID                     |
+| `PATCH`  | `/post/:id` | Bearer | Update post                        |
+| `DELETE` | `/post/:id` | Bearer | Soft-delete post                   |
 
 ### Health
 
@@ -174,11 +213,11 @@ cd post-worker  && npm test
 
 Configured declaratively in `kong/config.yml`:
 
-| Route | Limit |
-|---|---|
+| Route       | Limit       |
+| ----------- | ----------- |
 | Auth routes | 100 req/min |
 | Post routes | 200 req/min |
-| Global | 300 req/min |
+| Global      | 300 req/min |
 
 ## GitHub Packages
 
