@@ -1,0 +1,45 @@
+name: Test
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    unit-tests:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: https://npm.pkg.github.com
+                  scope: "@backendworks"
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Generate Prisma client
+              run: npx prisma generate
+
+            - name: Run unit tests with coverage
+              run: npm test
+              env:
+                  NODE_ENV: test
+
+            - name: Upload coverage report
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: post-db-coverage
+                  path: coverage/
+                  retention-days: 7

@@ -1,0 +1,43 @@
+{
+  "name": "@backendworks/post-db",
+  "version": "1.0.0",
+  "description": "ORM-agnostic database package for the post domain (Post)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BackendWorks/post-db.git"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "prisma:generate": "dotenv -e .env.docker -- prisma generate",
+    "prisma:migrate": "dotenv -e .env.docker -- prisma migrate dev",
+    "prisma:migrate:prod": "dotenv -e .env.docker -- prisma migrate deploy",
+    "prisma:studio": "dotenv -e .env.docker -- prisma studio",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@prisma/client": "^5.21.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.5",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "prisma": "^5.21.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,106 @@
+name: Deploy (GitHub Packages)
+
+on:
+    workflow_dispatch:
+        inputs:
+            version_bump:
+                description: "Version bump type"
+                required: true
+                default: patch
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
+    push:
+        branches:
+            - main
+        paths:
+            - "src/**"
+            - "prisma/**"
+            - "package.json"
+
+permissions:
+    contents: write
+    packages: write
+
+jobs:
+    publish:
+        name: Publish to GitHub Packages
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GH_TOKEN }}
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: https://npm.pkg.github.com
+                  scope: "@backendworks"
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Generate Prisma client
+              run: npx prisma generate
+
+            - name: Build
+              run: npm run build
+
+            - name: Configure git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Determine version bump
+              id: bump
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "type=${{ inputs.version_bump }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "type=patch" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Bump version
+              id: version
+              run: |
+                  npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "new_version=$VERSION" >> $GITHUB_OUTPUT
+
+            - name: Commit and tag version
+              run: |
+                  git add package.json
+                  git commit -m "chore(release): @backendworks/post-db@${{ steps.version.outputs.new_version }}"
+                  git tag "v${{ steps.version.outputs.new_version }}"
+                  git push origin HEAD:main --follow-tags
+
+            - name: Publish to GitHub Packages
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: v${{ steps.version.outputs.new_version }}
+                  name: "@backendworks/post-db v${{ steps.version.outputs.new_version }}"
+                  body: |
+                      ## @backendworks/post-db v${{ steps.version.outputs.new_version }}
+
+                      Published to [GitHub Packages](https://github.com/orgs/backendworks/packages).
+
+                      ### Install
+                      ```bash
+                      npm install @backendworks/post-db@${{ steps.version.outputs.new_version }}
+                      ```
+                  generate_release_notes: true
+                  token: ${{ secrets.GH_TOKEN }}

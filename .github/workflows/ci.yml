@@ -1,0 +1,41 @@
+name: CI
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    lint-and-build:
+        name: Lint, Format & Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: https://npm.pkg.github.com
+                  scope: "@backendworks"
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Generate Prisma client
+              run: npx prisma generate
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Format check
+              run: npx prettier --check "src/**/*.ts"
+
+            - name: Build
+              run: npm run build

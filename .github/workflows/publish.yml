@@ -1,0 +1,93 @@
+# Reusable workflow: build, bump version, publish to GitHub Packages, create GitHub Release
+# Called by release.yml in each package repo
+name: Publish Package (reusable)
+
+on:
+    workflow_call:
+        inputs:
+            package-path:
+                description: "Relative path to the package directory (e.g. packages/post-db)"
+                required: true
+                type: string
+            package-name:
+                description: "npm package name (e.g. @backendworks/post-db)"
+                required: true
+                type: string
+            bump:
+                description: "Version bump type: patch | minor | major"
+                required: false
+                type: string
+                default: "patch"
+        secrets:
+            GH_TOKEN:
+                required: true
+
+jobs:
+    publish:
+        name: Build & Publish ${{ inputs.package-name }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write # push version tag + commit
+            packages: write # publish to GitHub Packages
+            id-token: write # provenance attestation
+
+        defaults:
+            run:
+                working-directory: ${{ inputs.package-path }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GH_TOKEN }}
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: "https://npm.pkg.github.com"
+                  scope: "@backendworks"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Generate Prisma client
+              run: npx prisma generate
+
+            - name: Build
+              run: npm run build
+
+            - name: Configure git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Bump version
+              id: bump
+              run: |
+                  npm version ${{ inputs.bump }} --no-git-tag-version
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+            - name: Commit & tag
+              run: |
+                  git add package.json
+                  git commit -m "chore(release): ${{ inputs.package-name }}@${{ steps.bump.outputs.version }}"
+                  git tag "${{ inputs.package-name }}@${{ steps.bump.outputs.version }}"
+                  git push origin HEAD --follow-tags
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Publish to GitHub Packages
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: "${{ inputs.package-name }}@${{ steps.bump.outputs.version }}"
+                  name: "${{ inputs.package-name }} v${{ steps.bump.outputs.version }}"
+                  generate_release_notes: true
+                  token: ${{ secrets.GH_TOKEN }}

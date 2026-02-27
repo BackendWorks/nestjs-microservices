@@ -1,0 +1,24 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Post {
+    id        String    @id @default(uuid())
+    title     String
+    content   String
+    images    String[]
+    createdBy String    @map("created_by") @db.Uuid
+    updatedBy String?   @map("updated_by") @db.Uuid
+    deletedBy String?   @map("deleted_by") @db.Uuid
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+    isDeleted Boolean   @default(false) @map("is_deleted")
+
+    @@map("posts")
+}
